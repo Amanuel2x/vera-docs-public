@@ -1,109 +1,48 @@
 ---
-title: "Run your first VERA AI skill"
-description: "Walkthrough for running the meta-ads-analysis or lead-scorer skill on a client to get Claude-powered insights in under 30 seconds."
+title: "Run your first AI skill"
+description: "How to run an AI analysis on a client in VERA and read the results."
 ---
 
-AI skills are the fastest way to get deep analysis on your clients without writing a single prompt. Each skill fetches live data from your connected integrations, injects it into a purpose-built Claude prompt, and returns structured insights you can act on immediately. This guide walks you through running your first skill from the VERA dashboard.
+AI skills analyze your client's live data and return structured, actionable findings — no prompting required. This guide walks you through running one for the first time.
 
-## Prerequisites
+## Before you start
 
-Before running a skill, make sure you have:
-
+Make sure you have:
 - At least one client added to your workspace
-- At least one integration connected — Meta Ads for `meta-ads-analysis`, or any data source for `lead-scorer`
+- At least one integration connected (Meta Ads for campaign analysis, or any source for lead scoring)
 
 If you haven't connected an integration yet, see [Connect your first integration](/guides/connect-first-integration).
 
-## Run a skill from the dashboard
+## Run a skill
 
 <Steps>
-  <Step title="Open the Clients page">
-    Click **Clients** in the left sidebar to see your client list.
-  </Step>
-
-  <Step title="Select a client">
-    Click on the client you want to analyze. This opens the client detail page.
+  <Step title="Open a client">
+    Click **Clients** in the left sidebar, then click on the client you want to analyze.
   </Step>
 
   <Step title="Go to the Skills tab">
-    On the client detail page, click the **Skills** tab. You'll see a dropdown listing all available skills for this client.
+    Click the **Skills** tab on the client detail page.
   </Step>
 
   <Step title="Choose a skill">
-    Select a skill from the dropdown. For your first run:
+    Select a skill from the dropdown. Good starting points:
 
-    - **Meta Ads Analysis** — requires Meta Ads connected. Analyzes campaign performance, CPL trends, and audience insights.
-    - **Lead Scorer** — scores leads for this client based on fit, engagement, timing, and intent signals. Works with any connected data source.
-    - **SEO Audit** — requires a website URL set on the client profile. Audits technical SEO and returns a scored report.
+    - **Meta Ads Analysis** — reviews campaign performance and tells you what to fix. Requires Meta Ads connected.
+    - **Lead Scorer** — scores your leads so you know who to contact first. Works with any connected data.
+    - **SEO Audit** — audits the client's website. Requires a website URL on the client profile.
   </Step>
 
   <Step title="Click Run">
-    Click the **Run** button. VERA fetches live data from your connected integrations, constructs the Claude prompt, and begins analysis.
+    Click **Run**. VERA pulls the latest data and runs the analysis. Results appear in 10–30 seconds.
   </Step>
 
   <Step title="Read the output">
-    Results appear within 10–30 seconds. Scroll down on the Skills tab to read the full AI output. The response includes structured findings and recommended actions.
-
-    Cached skills return instantly if you've run them recently — SEO Audit caches for 24 hours, Lead Scorer for 30 minutes.
-  </Step>
-
-  <Step title="Review past runs">
-    All skill runs are saved to history. You can return to the Skills tab at any time and scroll through previous outputs to track how insights change over time.
+    Scroll down to see the full AI output. Each skill returns structured findings and specific recommended actions — not just a summary.
   </Step>
 </Steps>
 
-<Note>
-  Skills are rate-limited to 20 runs per minute per workspace. If you're running skills in bulk across many clients, pace your requests to stay within this limit.
-</Note>
-
-## Available skills
-
-| Skill ID | Name | What it does | Data required |
-|---|---|---|---|
-| `meta-ads-analysis` | Meta Ads Analysis | CPL, CTR, audience, creative performance | Meta Ads connected |
-| `lead-scorer` | Lead Scorer | 0–100 score across fit, engagement, timing, intent | Any connected data |
-| `seo-audit` | SEO Audit | Technical SEO score and issue list | Website URL on client |
-| `content-writing` | Content Writing | Ad copy, landing page copy, emails | Brief as input |
-| `campaign-builder` | Campaign Builder | Full campaign brief with targeting and budget | Brief as input |
-| `campaign-monitor` | Campaign Monitor | Flags underperforming campaigns | Meta Ads connected |
-| `meeting-analysis` | Meeting Analysis | Summary, action items, deal signals | Fathom connected |
-| `weekly-summary` | Weekly Summary | Cross-client performance summary | Any data |
-| `monthly-report` | Monthly Report | Full monthly report for a client | Any data |
-
-## Run a skill via the API
-
-You can trigger any skill programmatically using the REST API. This is useful for integrating skill runs into your own workflows or automations.
-
-```bash
-curl -X POST "https://api.verahq.ai/api/v1/skills/meta-ads-analysis/run" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "client_id": "client_abc123",
-    "inputs": {}
-  }'
-```
-
-The response includes the Claude output and metadata about the run:
-
-```json
-{
-  "run_id": "run_xyz789",
-  "skill_id": "meta-ads-analysis",
-  "status": "completed",
-  "output": "## Meta Ads Analysis\n\nYour CPL over the last 30 days is ...",
-  "cost_usd": 0.0042,
-  "started_at": "2026-04-19T10:05:00Z"
-}
-```
-
-To retrieve past runs for a client:
-
-```bash
-curl "https://api.verahq.ai/api/v1/skills/runs/{client_id}" \
-  -H "X-API-Key: YOUR_API_KEY"
-```
+All skill runs are saved automatically. Come back to the Skills tab any time to see the history and track how things change over time.
 
 <Tip>
-  If a skill returns no data or an empty analysis, check that the relevant integration is connected and that backfill has completed. You can verify integration status on the Setup page or via the [integration health endpoint](/guides/connect-first-integration#check-integration-health).
+  If a skill comes back with no data, check that the relevant integration is connected and the initial data sync has finished. You can check sync status on the **Setup** page.
 </Tip>

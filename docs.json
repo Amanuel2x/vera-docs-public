@@ -7,12 +7,6 @@
     "light": "#EDE9FE",
     "dark": "#4C1D95"
   },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/Amanuel2x/vera-backend"
-    }
-  },
   "navigation": {
     "tabs": [
       {
@@ -22,8 +16,7 @@
             "group": "Get Started",
             "pages": [
               "introduction",
-              "quickstart",
-              "authentication"
+              "quickstart"
             ]
           },
           {
@@ -58,35 +51,11 @@
             ]
           },
           {
-            "group": "Guides",
+            "group": "How-To Guides",
             "pages": [
               "guides/connect-first-integration",
               "guides/run-your-first-skill",
               "guides/set-up-automations"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API Reference",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api-reference/overview",
-              "api-reference/authentication"
-            ]
-          },
-          {
-            "group": "Endpoints",
-            "pages": [
-              "api-reference/clients",
-              "api-reference/campaigns",
-              "api-reference/leads",
-              "api-reference/skills",
-              "api-reference/intelligence",
-              "api-reference/actions",
-              "api-reference/reports"
             ]
           }
         ]

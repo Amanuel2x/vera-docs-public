@@ -1,111 +1,44 @@
 ---
-title: "Lead scoring — prioritize your best prospects"
-description: "VERA scores every lead 0–100 automatically across fit, engagement, timing, and intent so you always know which prospects to contact first."
+title: "Lead scoring"
+description: "VERA scores every lead 0–100 automatically so you always know who to contact first."
 ---
 
-VERA scores every lead in your workspace automatically, combining a rules-based calculation with an AI layer powered by Claude. The result is a single 0–100 score that reflects how likely a lead is to convert — updated continuously as new signals come in.
+Every lead in your workspace gets scored automatically on a 0–100 scale. Scores update every 6 hours, so your list stays current without any manual effort.
 
-## How scores are calculated
-
-Every lead score is built from four dimensions:
+## What the score is based on
 
 <AccordionGroup>
   <Accordion title="Fit">
-    How well the lead matches your ideal customer profile. VERA compares the contact's industry, company size, location, and tags against the ICP profile Vera One has built from your historical wins.
+    How well the lead matches your ideal customer — their industry, location, and profile compared to your historical wins.
   </Accordion>
   <Accordion title="Engagement">
-    The depth and recency of the lead's interaction history — messages sent, replies received, meetings booked, and calls completed. A lead who replied yesterday scores higher than one who went quiet three weeks ago.
+    The depth and recency of their interaction history — messages, replies, meetings booked, and calls completed. A lead who replied yesterday ranks higher than one who's been quiet for weeks.
   </Accordion>
   <Accordion title="Timing">
-    How recently the lead entered your pipeline and how quickly they're moving through stages. Velocity matters: a lead who moved from "New Lead" to "Booked" in 48 hours gets a higher timing score than one sitting untouched for a month.
+    How fast they're moving through your pipeline. A lead who went from inquiry to booked call in 48 hours scores higher than one sitting untouched for a month.
   </Accordion>
   <Accordion title="Intent">
-    Behavioral signals that indicate purchase readiness — form submissions, ad interactions, landing page conversions, and pipeline stage changes. A contact who submitted a form and booked a call on the same day shows strong intent.
+    Behavioral signals — form submissions, ad clicks, landing page conversions, and pipeline stage changes that indicate they're ready to buy.
   </Accordion>
 </AccordionGroup>
 
-## Score update schedule
+## Where to see lead scores
 
-Scores update automatically every 6 hours via the `score_leads` background task. You can also trigger scoring manually for any individual contact.
+**Pipeline page** — your top 10 leads are shown with their scores and a recommended next action for each one.
 
-<Tabs>
-  <Tab title="Manual score — single contact">
-    ```bash
-    POST https://api.verahq.ai/api/v1/leads/{workspace_id}/score
+**Intelligence feed** — when a lead's score changes significantly, VERA surfaces it here.
 
-    {
-      "contact_id": "abc123",
-      "contact_data": {
-        "name": "Jane Smith",
-        "email": "jane@example.com",
-        "tags": ["booked", "paid-ad"],
-        "source": "meta_lead"
-      }
-    }
-    ```
+**Client detail page** — view all leads for a specific client with their scores and history.
 
-    The response includes the score, a full breakdown by dimension, and a recommended next action.
-  </Tab>
-  <Tab title="Score all contacts">
-    ```bash
-    POST https://api.verahq.ai/api/v1/leads/{workspace_id}/score-all
-    ```
+## Automatic actions based on scores
 
-    This pulls contacts from your connected GoHighLevel account and scores each one. Results are upserted into the lead scores table.
-  </Tab>
-</Tabs>
+You can set up the Action Engine to respond to lead scores automatically. The default ruleset includes:
 
-## Lead leaderboard
+- When a lead scores **80 or higher** — VERA creates a follow-up task in GoHighLevel so nothing falls through the cracks
+- When a lead scores **70 or higher** — VERA fires a qualified lead conversion event back to your connected ad platforms to improve attribution
 
-The leaderboard shows your top 20 leads across all clients, ranked by score. Use it as your daily prospecting shortlist.
+You can adjust these thresholds or add your own rules in **Automations**.
 
-```bash
-GET https://api.verahq.ai/api/v1/leads/{workspace_id}/leaderboard
-```
-
-Each entry in the response includes:
-
-- Contact name and email
-- Composite score (0–100)
-- AI score and AI breakdown (from the `lead-scorer` skill)
-- Source and last activity timestamp
-
-## Lead Priority Feed
-
-The Lead Priority Feed narrows the leaderboard to your top 10 leads and adds a recommended next action for each one — surfaced from Vera One signals.
-
-```bash
-GET https://api.verahq.ai/api/v1/intelligence/{workspace_id}/lead-priority
-```
-
-Each entry includes a `reasoning` field explaining why this lead is ranked where it is and what action to take next.
-
-## Network benchmark comparison
-
-VERA compares your leads' CPL against similar agencies in the Vera One network. The `score_breakdown` field on every lead includes a `network_benchmark` object:
-
-```json
-{
-  "network_benchmark": {
-    "avg_cpl": 42.50,
-    "confidence": 0.87,
-    "industry": "real_estate",
-    "platform": "meta"
-  }
-}
-```
-
-A high confidence score means the benchmark is based on enough data points from similar workspaces to be meaningful.
-
-## How lead scores connect to the Action Engine
-
-Lead scores are live signals that the Action Engine can react to automatically. The default ruleset includes:
-
-- **Hot Lead → GHL Task** — when a lead scores 80 or above, VERA automatically creates a follow-up task in GoHighLevel
-- **Qualified Lead conversion event** — when a lead reaches a score of 70 or higher, VERA fires a `QualifiedLead` custom conversion event to all connected ad platforms (Meta CAPI, TikTok, Google Ads)
-
-You can customize the score thresholds in the Action Engine rules.
-
-<Note>
-The AI scorer (`lead-scorer` skill) and the rules-based auto-scorer run independently and write to separate fields. The composite `score` field is what drives Action Engine rules and the leaderboard.
-</Note>
+<Tip>
+  The Pipeline page is the fastest way to see your highest-priority leads each day — scores, reasoning, and recommended actions are all in one place.
+</Tip>

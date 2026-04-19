@@ -1,96 +1,61 @@
 ---
-title: "Connect your first integration to VERA"
-description: "Step-by-step walkthrough for linking Meta Ads or GoHighLevel CRM as your first data source and unlocking Vera One intelligence and lead scoring."
+title: "Connect your first integration"
+description: "How to link Meta Ads or GoHighLevel to VERA and get your data syncing."
 ---
 
-Connecting a platform is the first thing you should do after creating your VERA workspace. The moment an integration is live, VERA starts pulling historical data and Vera One begins building benchmarks for your clients. This guide walks you through the full process from the Setup page to your first synced data.
+Connecting a platform is the first thing you should do after creating your workspace. Once an integration is live, VERA pulls in your historical data and starts surfacing insights automatically.
 
-## Which integration to connect first
+## Which platform to connect first
 
-Start with **Meta Ads** or **GoHighLevel CRM** — they unlock the most Vera One capabilities. If you only have one available, connect it now and add the second later.
+Start with **Meta Ads** or **GoHighLevel** — they unlock the most features. If you only have one available right now, connect it and add the other later.
 
 <Steps>
-  <Step title="Log in to VERA">
-    Go to [app.verahq.ai](https://app.verahq.ai) and sign in to your workspace.
-  </Step>
-
   <Step title="Open Setup">
-    Click **Setup** in the left sidebar. You'll see a card for each supported platform: Meta Ads, GoHighLevel, Fathom, Calendly, Stripe, and others.
-  </Step>
-
-  <Step title="Find your integration card">
-    Locate the card for the platform you want to connect — **Meta Ads** or **GoHighLevel** are the recommended starting points.
+    Click **Setup** in the left sidebar. You'll see a card for each supported platform.
   </Step>
 
   <Step title="Click Connect">
-    Click the **Connect** button on the card. VERA redirects you to that platform's OAuth authorization screen.
+    Click the **Connect** button on the platform you want to add. VERA redirects you to that platform's authorization screen.
 
-    For GoHighLevel with a Private Integration Token, you'll instead be prompted to paste your token and Location ID directly into the card.
+    For GoHighLevel using a private integration token, you'll paste your token and Location ID directly into the card instead.
   </Step>
 
-  <Step title="Authorize VERA">
-    Complete the authorization on the platform's screen and return to VERA. The integration card updates to show a green connected state with your account name.
+  <Step title="Authorize and return">
+    Complete the authorization and come back to VERA. The card updates to show a green connected state with your account name.
   </Step>
 
-  <Step title="Wait for backfill">
-    VERA immediately begins a historical backfill — pulling campaigns, contacts, pipeline stages, meetings, and other records that already exist in the platform.
+  <Step title="Wait for the initial sync">
+    VERA immediately starts pulling in your historical data — campaigns, contacts, pipeline stages, meetings — from that platform.
 
     <Note>
-      Backfill can take a few minutes for large accounts. A progress indicator appears on the Setup card while it runs. Vera One intelligence features activate after backfill completes.
+      The initial sync can take a few minutes for large accounts. A progress indicator shows on the Setup card while it runs. Your data starts appearing across VERA once the sync finishes.
     </Note>
   </Step>
 
-  <Step title="Verify your data">
-    Once backfill finishes, your data appears across VERA:
-    - Campaign performance shows up on the **Growth** and **Campaigns** pages
-    - Contacts and pipeline stages appear on the **Pipeline** page
-    - Signals and scored leads surface in the **Intelligence** feed
-    - Vera One starts building benchmarks from your historical data
+  <Step title="Check your data">
+    Once the sync is done:
+    - Campaigns appear on the **Campaigns** page
+    - Contacts and pipeline stages show up on the **Pipeline** page
+    - Leads start getting scored in the **Intelligence** feed
   </Step>
 </Steps>
 
-## What happens after connecting Meta Ads
+## What you get from each integration
 
-- All campaigns in your connected ad account appear on the **Campaigns** page
-- Leads from Meta lead gen forms begin syncing and are scored by Vera One
-- If you have a conversion pixel, it is auto-assigned to matching clients
-- CAPI (Conversion API) events begin forwarding automatically for improved attribution
+**Meta Ads**
+- All campaigns, ad sets, and performance data appear in VERA
+- Leads from Meta lead forms start syncing and get scored automatically
+- Conversion events are forwarded to improve attribution accuracy
 
-## What happens after connecting GoHighLevel
-
-- Contacts and pipeline stages sync across all your sub-account locations
-- Lead attribution begins matching Meta leads to GHL contacts by email and phone
-- GHL stage changes (booked, showed, closed) trigger funnel events that feed back to your ad platforms
-- The Action Engine can create GHL tasks automatically when Vera One detects hot leads
+**GoHighLevel**
+- Contacts and pipeline stages sync across all your locations
+- Stage changes (booked, showed, closed) feed back into your campaign attribution
+- The Action Engine can create GHL tasks automatically when a hot lead is detected
 
 <Tip>
-  Connect both Meta Ads **and** GoHighLevel for the best Vera One intelligence. Cross-platform attribution — matching an ad click to a closed deal in GHL — is where the biggest insights come from.
+  Connect both Meta Ads and GoHighLevel for the best results. When both are connected, VERA can trace the full path from an ad click to a closed deal — that's where the most useful insights come from.
 </Tip>
 
-## Check integration health
+## Disconnecting an integration
 
-After connecting, you can verify that VERA's connection to the platform is live at any time. The Setup page runs a live health check against each platform's API and shows the connected account name.
-
-To programmatically check integration health:
-
-```bash
-curl "https://api.verahq.ai/api/v1/integrations/{workspace_id}/health" \
-  -H "X-API-Key: YOUR_API_KEY"
-```
-
-The response includes a per-platform `healthy` flag and any error messages:
-
-```json
-{
-  "workspace_id": "ws_abc123",
-  "checked_at": "2026-04-19T10:00:00Z",
-  "integrations": {
-    "meta_ads": { "healthy": true, "error": null, "account": "VERA Agency" },
-    "ghl":      { "healthy": true, "error": null, "account": "My Location" }
-  }
-}
-```
-
-## Disconnect an integration
-
-To disconnect, click the connected card on the Setup page and select **Disconnect**. This removes the stored token and stops future syncs. Historical data already imported into VERA is not deleted.
+Go to **Setup**, click the connected platform's card, and select **Disconnect**. This stops future syncing. Your existing data in VERA is not deleted.

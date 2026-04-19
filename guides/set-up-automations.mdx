@@ -1,191 +1,85 @@
 ---
-title: "Set up automated actions with VERA's Action Engine"
-description: "Step-by-step guide to creating Action Engine rules that fire automatically when Vera One detects signals like CPL spikes, hot leads, or churn risk."
+title: "Set up automated actions"
+description: "How to use the Action Engine to respond to signals automatically — no manual monitoring required."
 ---
 
-The Action Engine turns Vera One signals into automatic responses — no manual monitoring required. When Vera One detects something worth acting on (a CPL spike, a lead scoring above 80, a GHL stage change), a matching rule fires and executes an action: creating a GHL task, sending a Telegram alert, pausing a campaign, or logging a funnel event.
+The Action Engine lets you set up rules that respond to events automatically. A hot lead comes in, VERA creates a follow-up task. A campaign CPL spikes, VERA sends you an alert. You define the rules once, and they run in the background.
 
-This guide walks you through installing the default rules and creating your own.
+## Start with the default rules
 
-## How rules work
-
-Every rule has three parts:
-
-- **Trigger** — the signal type that activates the rule (e.g., `lead_scored`, `alert_created`, `ghl_stage_change`)
-- **Filter** — conditions the signal must meet before the rule fires (e.g., `{"score_gte": 80}`)
-- **Action** — what VERA does when the rule matches (e.g., `create_ghl_task`, `send_telegram`, `pause_campaign`)
-
-Rules also have a **cooldown** (minimum hours between fires for the same entity) and a **daily cap** (maximum fires per day), so you don't get flooded with duplicate actions.
-
-## Set up your first rules
+The fastest way to get going is to let VERA install a starter set of rules for you.
 
 <Steps>
   <Step title="Open Automations">
-    Click **Automations** in the left sidebar. This opens the Action Engine rule list.
+    Click **Automations** in the left sidebar.
   </Step>
 
   <Step title="Seed the default rules">
-    Click **Seed Default Rules**. VERA creates 8 pre-built rules instantly. This is the fastest way to get the Action Engine running.
-
-    The seed operation is idempotent — running it again won't create duplicates.
+    Click **Seed Default Rules**. VERA creates 8 pre-built rules instantly.
   </Step>
 
-  <Step title="Review the default rules">
-    The default rules cover the most common scenarios:
+  <Step title="Review and toggle">
+    Look through the rule cards. All 8 are enabled by default — turn off any that don't apply to your workflow.
 
-    | Rule | Trigger | Action |
-    |---|---|---|
-    | 3x Kill → Pause Campaign | `alert_created` (3x kill rule) | `pause_campaign` (requires confirmation) |
-    | CPL Spike → Alert | `alert_created` (CPL spike) | `create_alert` |
-    | Hot Lead → GHL Task | `lead_scored` (score ≥ 80) | `create_ghl_task` |
-    | Payment Received → Alert | `payment_received` | `create_alert` |
-    | Churn Risk → Alert | `churn_risk` (score ≥ 70) | `create_alert` |
-    | Close → Log Funnel Event | `ghl_stage_change` (closed) | `log_event` |
-    | Fatigue Detected → Swap Creative | `fatigue_detected` | `swap_creative` |
-    | Flip → Push Network Pattern | `workspace_flip` | `apply_network_pattern` |
-  </Step>
-
-  <Step title="Enable or disable individual rules">
-    Toggle the **Enabled** switch on any rule card. Rules are all enabled by default after seeding. Disable any rules that don't apply to your workflow.
-  </Step>
-
-  <Step title="Create a custom rule">
-    Click **New Rule** to open the rule editor.
-  </Step>
-
-  <Step title="Choose a trigger type">
-    Select a trigger from the dropdown. Common trigger types:
-
-    - `lead_scored` — fires when Vera One scores a lead
-    - `alert_created` — fires when a campaign alert is created
-    - `ghl_stage_change` — fires when a GHL pipeline stage changes
-    - `payment_received` — fires when a Stripe payment is logged
-    - `churn_risk` — fires when a client's churn score crosses a threshold
-    - `workspace_flip` — fires when a workspace moves between performance classifications
-  </Step>
-
-  <Step title="Set a trigger filter">
-    Add conditions as a JSON object. The filter supports exact match and range operators (`_gte`, `_lte`, `_in`).
-
-    Examples:
-    ```json
-    { "score_gte": 70 }
-    ```
-    ```json
-    { "alert_type": "cpl_spike" }
-    ```
-    ```json
-    { "event_type": "closed" }
-    ```
-
-    Leave the filter empty (`{}`) to match all signals of that trigger type.
-  </Step>
-
-  <Step title="Choose an action type">
-    Select what VERA should do when the rule fires:
-
-    - `create_ghl_task` — creates a follow-up task in GoHighLevel
-    - `tag_contact` — adds tags to a GHL contact
-    - `pause_campaign` — pauses a Meta campaign (destructive — confirm before enabling)
-    - `resume_campaign` — resumes a paused campaign
-    - `adjust_budget` — changes a campaign's daily budget
-    - `create_alert` — adds an alert to the VERA alerts feed
-    - `send_telegram` — sends a Telegram message
-    - `send_email` — sends a transactional email via Resend
-    - `run_skill` — triggers an AI skill run
-    - `log_event` — records a funnel event to the intelligence layer
-    - `enroll_sequence` — enrolls a contact in an outbound sequence
-    - `apply_network_pattern` — pushes a winning pattern to underperforming workspaces
-    - `recommend_objective_shift` — suggests a better campaign objective based on network benchmarks
-  </Step>
-
-  <Step title="Fill in the action config">
-    Provide the configuration for your chosen action type as a JSON object.
-
-    For `create_ghl_task`:
-    ```json
-    { "title": "Follow up — high-score lead" }
-    ```
-
-    For `tag_contact`:
-    ```json
-    { "tags": ["hot-lead", "vera-flagged"] }
-    ```
-
-    For `create_alert`:
-    ```json
-    {
-      "alert_type": "custom_alert",
-      "severity": "warning",
-      "title": "High-value lead detected"
-    }
-    ```
-  </Step>
-
-  <Step title="Set cooldown and daily cap">
-    - **Cooldown hours** — minimum hours between fires for the same entity. Default: 24 hours.
-    - **Daily cap** — maximum number of times this rule can fire in a 24-hour window. Default: 10.
-
-    Set cooldown to `0` and daily cap to a high number (e.g., 100) for rules like `Close → Log Funnel Event` that should fire on every matching event.
-  </Step>
-
-  <Step title="Enable the rule">
-    Toggle **Enabled** on. The rule is now live and will fire the next time a matching signal arrives.
+    | Rule | What it does |
+    |---|---|
+    | CPL Spike | Sends you an in-app alert when CPL rises sharply |
+    | Hot Lead | Creates a GoHighLevel task when a lead scores 80+ |
+    | Payment Received | Sends you an alert when a Stripe payment is logged |
+    | Churn Risk | Alerts you when a client's churn score crosses 70 |
+    | Campaign Kill | Flags for your approval before pausing a struggling campaign |
+    | Close | Logs a funnel event when a GHL contact moves to Closed |
   </Step>
 </Steps>
 
-## Test a rule before enabling
+## Create a custom rule
 
-Use the **Dry Run** button on any rule to simulate what it would do with sample signal data — without actually executing the action.
+<Steps>
+  <Step title="Click New Rule">
+    Click **New Rule** in the Automations page to open the rule editor.
+  </Step>
 
-You can also dry-run via the API:
+  <Step title="Choose a trigger">
+    Pick what VERA should listen for:
 
-```bash
-curl -X POST "https://api.verahq.ai/api/v1/actions/{workspace_id}/rules/{rule_id}/test" \
-  -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "signal_data": { "score": 85, "client_id": "client_abc123" }
-  }'
-```
+    - **Lead scored** — fires when a lead's score is updated
+    - **Campaign alert** — fires when a campaign alert is created (CPL spike, budget issue, etc.)
+    - **GHL stage change** — fires when a contact moves to a new pipeline stage
+    - **Payment received** — fires when a Stripe payment is logged
+    - **Churn risk** — fires when a client's churn risk score crosses a threshold
+  </Step>
 
-The response tells you whether the filter would have matched and what action would have run:
+  <Step title="Set a filter (optional)">
+    Add a condition to narrow when the rule fires. For example, only fire when a lead scores 75 or higher, or only when the alert type is a CPL spike. Leave the filter blank to match everything.
+  </Step>
 
-```json
-{
-  "rule_id": "rule_xyz",
-  "rule_name": "Hot Lead → GHL Task",
-  "filter_match": true,
-  "would_execute": true,
-  "action_type": "create_ghl_task",
-  "action_config": { "title": "Follow up — hot lead (score 80+)" },
-  "requires_confirmation": false,
-  "intelligence_context": null
-}
-```
+  <Step title="Choose an action">
+    Pick what VERA should do when the rule fires:
 
-## Confirmation flow for destructive actions
+    - **Create a GHL task** — adds a follow-up task in GoHighLevel
+    - **Tag a contact** — adds tags to a GHL contact
+    - **Send an alert** — creates an in-app notification in VERA
+    - **Send a Telegram message** — notifies a Telegram channel or user
+    - **Run an AI skill** — triggers an AI analysis automatically
+    - **Pause a campaign** — pauses a Meta or Google campaign (requires your confirmation)
+    - **Enroll in a sequence** — adds a contact to an outbound email sequence
+  </Step>
 
-Rules with actions like `pause_campaign` or `adjust_budget` default to `requires_confirmation: true`. When one of these rules fires, VERA creates a **pending action** alert instead of executing immediately.
+  <Step title="Set cooldown and daily cap">
+    **Cooldown** sets the minimum time between firings for the same entity — so you don't get the same alert about the same client five times in a row. Default is 24 hours.
 
-You'll see the pending action in your VERA alerts feed. Click **Execute** to approve it, or dismiss it to skip. This prevents accidental campaign changes from automated signals.
+    **Daily cap** limits how many times the rule can fire total in a 24-hour window. Default is 10.
+  </Step>
 
-To confirm a pending action via the API:
+  <Step title="Test it, then enable">
+    Click **Dry Run** to simulate what the rule would do without actually executing anything. Once you're satisfied, toggle **Enabled** on.
+  </Step>
+</Steps>
 
-```bash
-curl -X POST "https://api.verahq.ai/api/v1/actions/{workspace_id}/executions/{execution_id}/confirm" \
-  -H "X-API-Key: YOUR_API_KEY"
-```
+## Campaign actions need your approval
 
-## View execution history
-
-The **Execution Log** tab shows every rule that has fired, including the trigger data, action result, and whether it succeeded, failed, skipped (cooldown), or is waiting for confirmation.
-
-```bash
-curl "https://api.verahq.ai/api/v1/actions/{workspace_id}/executions?limit=50" \
-  -H "X-API-Key: YOUR_API_KEY"
-```
+Rules that pause or adjust campaigns require you to approve the action before it executes. When one fires, VERA creates a **pending action** in your alerts feed. Click **Execute** to approve or dismiss it to skip.
 
 <Tip>
-  Start with the 8 default rules and leave them running for a week before tuning. The execution log shows exactly which rules are firing, how often, and what they're doing — use that data to adjust filters and cooldowns rather than guessing upfront.
+  Run the default rules for a week before creating custom ones. Check the **Execution Log** to see what's actually firing — it shows each rule, what triggered it, and what happened. Use that to tune your setup rather than guessing.
 </Tip>
