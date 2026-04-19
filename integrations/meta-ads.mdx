@@ -1,0 +1,89 @@
+---
+title: "Connect Meta Ads to VERA"
+description: "Link your Meta Ads account to sync campaigns, ad sets, pixels, and lead forms, and to forward conversion events server-side via the Meta Conversions API."
+---
+
+Connecting Meta Ads is the foundational integration for most VERA workflows. Once connected, VERA can read and write campaigns, track conversions server-side, sync leads from your lead gen forms, and attribute those leads back to contacts in GoHighLevel.
+
+## What connecting Meta Ads unlocks
+
+- **Campaign reads and writes** — view campaigns, ad sets, and ads across all linked ad accounts; create and launch new campaigns directly from VERA
+- **Daily spend and performance data** — spend, impressions, clicks, leads, purchases, and ROAS rolled up per account or per campaign
+- **Conversion Pixel tracking** — VERA auto-saves your first Meta Pixel on connect so CAPI is ready without extra setup
+- **Meta Conversions API (CAPI)** — purchase, booking, and lead events are forwarded server-side for better signal match quality and improved ROAS
+- **Lead form sync** — leads submitted via Meta lead gen forms are pulled into VERA and matched to GoHighLevel contacts by email and phone
+- **Vera One intelligence** — campaign data feeds the network benchmarks that power lead scoring and campaign monitoring
+
+## How to connect
+
+<Steps>
+  <Step title="Go to Setup">
+    In the VERA dashboard, navigate to **Settings → Setup**.
+  </Step>
+  <Step title="Click Connect on the Meta Ads card">
+    VERA redirects you to Facebook's OAuth consent screen.
+  </Step>
+  <Step title="Log in and grant permissions">
+    Sign in with the Facebook account that manages your Business Manager. Grant all requested permissions — VERA needs them to read campaigns and sync leads.
+  </Step>
+  <Step title="Return to VERA">
+    After authorizing, Facebook redirects you back to the Setup page. Your Meta connection status shows as connected.
+  </Step>
+</Steps>
+
+<Note>
+  VERA exchanges your short-lived OAuth token for a long-lived token (~60 days) automatically. You do not need to reconnect every session.
+</Note>
+
+## Required Facebook permissions
+
+VERA requests the following scopes during the OAuth flow:
+
+| Scope | Purpose |
+|---|---|
+| `ads_management` | Create and manage campaigns, ad sets, and ads |
+| `ads_read` | Read campaign performance and insights |
+| `business_management` | Access Business Manager assets |
+| `leads_retrieval` | Pull leads from Meta lead gen forms |
+| `pages_read_engagement` | Read page data required for lead form access |
+| `pages_manage_ads` | Run ads on connected pages |
+| `pages_show_list` | List pages accessible by the connected account |
+
+## What VERA syncs
+
+After connecting, VERA pulls the following data:
+
+- **Ad accounts** — all accounts accessible to the connected user
+- **Campaigns** — status, objective, name, and 30-day performance metrics
+- **Ad sets** — budget, targeting, optimization goal
+- **Ads** — creative, status, and performance
+- **Daily spend** — day-by-day spend and lead counts per account, aggregated across all accounts
+- **Lead gen form leads** — full name, email, phone, form name, ad name, and campaign name for every lead submission
+
+## Conversion tracking via Meta CAPI
+
+VERA uses the Meta Conversions API to forward server-side events to Meta — supplementing browser pixel events and improving match quality.
+
+Events forwarded automatically:
+
+| VERA event | Meta event name |
+|---|---|
+| Lead form submission | `Lead` |
+| Calendly booking confirmed | `CompleteRegistration` |
+| Stripe payment confirmed | `Purchase` (with exact payment value) |
+
+<Tip>
+  Higher event match quality improves how Meta's algorithm optimizes your campaigns. Connecting Calendly and Stripe alongside Meta Ads sends richer funnel signals and typically improves ROAS within 48–72 hours.
+</Tip>
+
+## Attach a Meta ad account to a client
+
+To see campaign data filtered per client, set the **Meta Account ID** on the client record:
+
+1. Go to **Clients** and open the client.
+2. Edit the client and enter the Meta Ad Account ID (e.g. `act_123456789`).
+3. Save. Campaign data for that account will now appear on the client's profile.
+
+## Lead attribution with GoHighLevel
+
+When both Meta Ads and GoHighLevel are connected, VERA cross-references each new Meta lead against your GHL contacts by email and phone. Matched leads are linked to their GHL contact ID automatically, enabling the full prospect funnel view in VERA.

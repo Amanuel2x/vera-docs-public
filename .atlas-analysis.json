@@ -1,0 +1,137 @@
+{
+  "projectType": "saas",
+  "projectName": "VERA",
+  "projectDescription": "VERA is an AI-powered Agency OS that helps marketing agencies manage clients, run campaigns across Meta and Google Ads, score leads, automate actions, and surface intelligence through Vera One — the AI decision layer.",
+  "theme": "luma",
+  "primaryColor": "#7C3AED",
+  "lightColor": "#EDE9FE",
+  "darkColor": "#4C1D95",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/workspace",
+              "concepts/clients",
+              "concepts/vera-one"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/meta-ads",
+              "integrations/ghl",
+              "integrations/google-ads",
+              "integrations/fathom",
+              "integrations/calendly",
+              "integrations/stripe"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/campaigns",
+              "features/lead-scoring",
+              "features/skills",
+              "features/action-engine",
+              "features/reports",
+              "features/landing-pages"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/connect-first-integration",
+              "guides/run-your-first-skill",
+              "guides/set-up-automations"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/clients",
+              "api-reference/campaigns",
+              "api-reference/leads",
+              "api-reference/skills",
+              "api-reference/intelligence",
+              "api-reference/actions",
+              "api-reference/reports"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Vera One AI intelligence layer — signals, trends, and attribution across all connected platforms",
+    "Multi-platform ad management — Meta Ads and Google Ads campaigns from one dashboard",
+    "AI-powered skills — campaign analysis, SEO audits, content writing, lead scoring, and more",
+    "Rule-based Action Engine — automate responses to signals (pause campaigns, tag contacts, send alerts)",
+    "Lead scoring and pipeline management with GHL CRM integration",
+    "AI Campaign Builder — build and launch Meta Ads campaigns with VERA guidance",
+    "Client reporting — auto-generated weekly and monthly reports emailed to clients",
+    "Landing page builder with multi-platform pixel injection and form-to-CRM lead capture",
+    "VERA Chat — conversational AI for strategy, copy, and campaign planning",
+    "ICP profiling and drift monitoring — track ideal customer profile vs observed audience"
+  ],
+  "publicApiSurface": [
+    "GET /api/v1/clients/{workspace_id}",
+    "POST /api/v1/clients/{workspace_id}",
+    "GET /api/v1/campaigns/{workspace_id}",
+    "POST /api/v1/campaigns/{workspace_id}/{client_id}/{platform}/{campaign_id}/pause",
+    "POST /api/v1/campaigns/{workspace_id}/{client_id}/{platform}/{campaign_id}/resume",
+    "POST /api/v1/campaigns/orchestrate/{workspace_id}",
+    "POST /api/v1/campaigns/orchestrate/{workspace_id}/{draft_id}/recommend",
+    "POST /api/v1/campaigns/orchestrate/{workspace_id}/{draft_id}/launch",
+    "GET /api/v1/leads/{workspace_id}/scores",
+    "GET /api/v1/leads/{workspace_id}/leaderboard",
+    "POST /api/v1/leads/{workspace_id}/score",
+    "GET /api/v1/skills/",
+    "POST /api/v1/skills/{skill_id}/run",
+    "GET /api/v1/intelligence/{workspace_id}/feed",
+    "GET /api/v1/intelligence/{workspace_id}/signals",
+    "GET /api/v1/intelligence/{workspace_id}/funnel",
+    "GET /api/v1/intelligence/{workspace_id}/churn-risk",
+    "GET /api/v1/intelligence/{workspace_id}/quick-wins",
+    "GET /api/v1/actions/{workspace_id}/rules",
+    "POST /api/v1/actions/{workspace_id}/rules",
+    "GET /api/v1/actions/{workspace_id}/executions",
+    "GET /api/v1/reports/{workspace_id}",
+    "POST /api/v1/reports/{workspace_id}/generate",
+    "GET /api/v1/alerts/{workspace_id}",
+    "GET /api/v1/{workspace_id}/contacts",
+    "GET /api/v1/{workspace_id}/campaigns",
+    "GET /api/v1/{workspace_id}/meetings",
+    "GET /api/v1/{workspace_id}/bookings",
+    "GET /api/v1/{workspace_id}/connected-platforms",
+    "GET /api/v1/landing-pages/{workspace_id}",
+    "POST /api/v1/landing-pages/{workspace_id}/generate",
+    "GET /api/v1/portal/{token}/overview",
+    "GET /api/v1/portal/{token}/pipeline",
+    "GET /api/v1/portal/{token}/reports"
+  ]
+}

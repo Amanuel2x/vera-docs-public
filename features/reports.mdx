@@ -1,0 +1,91 @@
+---
+title: "Client reports — automated and on-demand"
+description: "VERA generates branded HTML reports covering campaign performance, lead activity, and key metrics for each client — automatically on schedule or on demand."
+---
+
+VERA generates performance reports for each client and delivers them with a PDF attachment via email. Reports are produced automatically on a schedule, but you can generate and send them any time from the Reports page or the API.
+
+## Report types
+
+| Type | Description | Auto-schedule |
+|------|-------------|---------------|
+| `weekly_performance` | Concise weekly summary — key wins, concerns, action items, and metrics snapshot | Every Friday at 9am UTC |
+| `monthly_summary` | Full monthly narrative — executive summary, campaign section, SEO section, next-month plan | 1st of each month at 7am UTC |
+| `seo_audit` | On-demand SEO health report for a client's website | On demand only |
+| `campaign_review` | On-demand campaign performance deep-dive | On demand only |
+
+## Generating a report manually
+
+<Steps>
+  <Step title="Go to the Reports page">
+    Navigate to **Reports** in the sidebar.
+  </Step>
+  <Step title="Select a client and report type">
+    Choose the client you want to report on and the report type.
+  </Step>
+  <Step title="Set the date range (optional)">
+    For `weekly_performance` and `monthly_summary`, you can specify a custom `period_start` and `period_end`. If you leave these blank, VERA defaults to the last 7 days.
+  </Step>
+  <Step title="Click Generate">
+    VERA runs the corresponding AI skill, pulls live data from your connected integrations, and produces the report. The rendered HTML and structured JSON are saved immediately.
+  </Step>
+</Steps>
+
+Via the API:
+
+```bash
+POST https://api.verahq.ai/api/v1/reports/{workspace_id}/generate
+
+{
+  "report_type": "weekly_performance",
+  "client_id": "your-client-id",
+  "period_start": "2026-04-01T00:00:00Z",
+  "period_end": "2026-04-07T23:59:59Z"
+}
+```
+
+The response includes the `report_id` and title. Use the report ID to retrieve the HTML or send the report.
+
+## Sending a report to a client
+
+VERA emails the report to one or more recipients with the rendered PDF attached.
+
+```bash
+POST https://api.verahq.ai/api/v1/reports/{workspace_id}/{report_id}/send
+
+{
+  "to": ["client@example.com", "cc@example.com"]
+}
+```
+
+VERA records the recipients and timestamp on the report record after sending.
+
+## Report tracking
+
+Every report email includes an invisible 1×1 tracking pixel. When a client opens the email and the pixel loads, VERA logs a `report_viewed` intelligence event in the Vera One feed — so you know exactly when your client read the report without asking them.
+
+<Note>
+The tracking pixel fires on email open, not on PDF download. If a client downloads the PDF without opening the email preview, the open will not be recorded.
+</Note>
+
+## Viewing reports
+
+You can view a report's rendered HTML directly in the browser or download the PDF.
+
+```bash
+# View rendered HTML in-browser
+GET https://api.verahq.ai/api/v1/reports/{workspace_id}/{report_id}/html
+
+# Download as PDF
+GET https://api.verahq.ai/api/v1/reports/{workspace_id}/{report_id}/pdf
+```
+
+To list all reports for a workspace — optionally filtered by client or type:
+
+```bash
+GET https://api.verahq.ai/api/v1/reports/{workspace_id}?client_id=abc&report_type=weekly_performance
+```
+
+## Network benchmark context
+
+When VERA generates a report, it automatically pulls Vera One benchmark data for the client's industry and platform, then includes a network comparison in the report output. This shows how the client's CPL, CTR, and spend compare to similar agencies — without exposing any other agency's data.

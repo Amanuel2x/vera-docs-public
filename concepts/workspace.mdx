@@ -1,0 +1,78 @@
+---
+title: "Workspaces in VERA — your agency's home base"
+description: "A workspace is the top-level container for your agency in VERA. Every client, campaign, integration, and setting is scoped to your workspace."
+---
+
+Your workspace is the single account that contains everything in VERA — your clients, campaigns, integrations, leads, AI skill runs, and settings. When you sign up, VERA creates one workspace for your agency. All data you create or import lives inside it, and all API calls are scoped to your workspace ID as a path parameter.
+
+## What lives in a workspace
+
+<CardGroup cols={2}>
+  <Card title="Clients" icon="building">
+    Every business or account your agency manages. Add them manually or import from GoHighLevel.
+  </Card>
+  <Card title="Integrations" icon="plug">
+    Your connected platforms — Meta Ads, GoHighLevel, Google Ads, Fathom, Calendly, Stripe. Each connection is stored at the workspace level.
+  </Card>
+  <Card title="Campaigns" icon="bullhorn">
+    All campaign records created or imported through VERA, linked back to individual clients.
+  </Card>
+  <Card title="Vera One intelligence" icon="brain">
+    The signal feed, benchmarks, lead scores, and AI insights generated from your connected data.
+  </Card>
+</CardGroup>
+
+## Workspace settings
+
+You can view and update these settings from **Settings** in the sidebar.
+
+| Setting | Description |
+|---|---|
+| **Workspace name** | The display name for your agency inside VERA. |
+| **Owner email** | The primary email tied to your account. Used for transactional notifications. |
+| **User type** | How you use VERA — `agency`, `freelancer`, or `brand`. Used to personalize benchmarks and cold-start context. |
+| **Branding** | Upload your agency logo and set an accent color for client-facing reports and portals. |
+
+## API key
+
+Your workspace API key authenticates all requests to the VERA API. You can find and regenerate your key from **Settings → API**.
+
+Pass the key in the `X-API-Key` request header:
+
+```http
+X-API-Key: vera_your_api_key_here
+```
+
+<Warning>
+  Your API key has full access to your workspace. Never expose it in client-side code or public repositories.
+</Warning>
+
+## Client seats
+
+Your workspace includes a client seat limit based on your plan. Solo plan workspaces are limited to one client. Agency plan workspaces are limited to `client_seats` as set on your subscription. Business plan workspaces have no limit.
+
+When you reach your seat limit, adding a new client returns a `402` error with an upgrade link. You can check your current usage from **Settings → Billing**.
+
+## Workspace ID
+
+Every API endpoint that is workspace-scoped takes your workspace ID as a path parameter — for example:
+
+```
+GET https://api.verahq.ai/api/v1/clients/{workspace_id}
+```
+
+<Steps>
+  <Step title="Open Settings">
+    Click **Settings** in the left sidebar of the VERA dashboard.
+  </Step>
+  <Step title="Find your workspace ID">
+    Your workspace ID is displayed at the top of the **General** tab. It is a UUID in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`.
+  </Step>
+  <Step title="Copy it">
+    Click the copy icon next to the ID to add it to your clipboard.
+  </Step>
+</Steps>
+
+<Note>
+  Your workspace ID is not a secret — it appears as a path segment in all API calls and does not grant access on its own. Authentication is handled by your API key.
+</Note>

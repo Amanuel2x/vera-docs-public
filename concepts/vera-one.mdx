@@ -1,0 +1,80 @@
+---
+title: "What is Vera One? VERA's AI intelligence layer"
+description: "Vera One is VERA's AI decision layer — it aggregates signals across connected platforms, scores leads, detects patterns, and surfaces insights automatically."
+---
+
+Vera One is the intelligence layer built into VERA. It runs continuously in the background, aggregating data from every connected platform, scoring leads, computing benchmarks, and surfacing insights — without any manual analysis required from you. Every feature in VERA that surfaces a recommendation, fires an automated action, or benchmarks your performance against similar agencies is powered by Vera One.
+
+## How it works
+
+<Steps>
+  <Step title="Data flows in from your integrations">
+    As events happen across your connected platforms — ad impressions, lead form submissions, GHL stage changes, Calendly bookings, Fathom meeting recordings, Stripe payments — VERA captures each one as a normalized intelligence event. Webhooks, background syncs, and manual backfills all feed into the same event stream.
+  </Step>
+  <Step title="Vera One normalizes and scores every signal">
+    Each incoming event is run through a quality gate that compares it against baseline benchmarks. Signals that fall within expected ranges are accepted at full weight. Signals from accounts with unusual patterns receive reduced weight. Vera One also scores every lead on a 0–100 scale across four dimensions: fit, engagement, timing, and intent.
+  </Step>
+  <Step title="Benchmarks are computed across the network">
+    Nightly, Vera One aggregates anonymized performance data across all contributing VERA workspaces, grouped by platform, objective, industry, and geography. The result is a live benchmark layer — CPL, CTR, ROAS, show rate, and close rate — segmented to match your agency's context as closely as possible.
+  </Step>
+  <Step title="Insights surface where you need them">
+    Processed signals and computed benchmarks flow into the **Intelligence** feed, the dashboard quick-wins card, client churn risk scores, goal alignment checks, and the Action Engine rule evaluation loop.
+  </Step>
+</Steps>
+
+## Key capabilities
+
+<CardGroup cols={2}>
+  <Card title="Signal feed" icon="signal">
+    A live stream of tagged intelligence events from every connected platform. Warnings surface when CPL spikes, budgets run with zero leads, or audience frequency crosses fatigue thresholds.
+  </Card>
+  <Card title="Lead scoring" icon="star">
+    Every lead is scored 0–100 automatically, every six hours. Scores reflect response speed, call quality, pipeline stage, recent activity, and ad attribution strength.
+  </Card>
+  <Card title="Funnel attribution" icon="filter">
+    Vera One traces the full chain from ad spend through leads, bookings, showed, closed, and revenue — and compares your show and close rates against the network average.
+  </Card>
+  <Card title="Trend detection" icon="chart-line">
+    Week-over-week comparisons for CPL, lead volume, pipeline size, and skill run frequency. Vera One detects which direction each metric is moving before you have to ask.
+  </Card>
+  <Card title="Churn risk" icon="triangle-exclamation">
+    Each client is scored nightly for churn risk across three signals: rising CPL trend, no new campaigns in 30 days, and no recent AI skill runs. Scores are color-coded 0–100.
+  </Card>
+  <Card title="Goal alignment" icon="bullseye">
+    Vera One checks whether your active campaign objectives match the primary goal you set during onboarding. When alignment drops below 50%, a drift alert surfaces automatically.
+  </Card>
+  <Card title="ICP profiling" icon="user-magnifying-glass">
+    Ideal customer profiles are built from your backfill data immediately after a new integration connects — before any campaigns have run through VERA. Nightly updates compare the predictive ICP to the observed profile and flag drift when they diverge.
+  </Card>
+  <Card title="Quick wins" icon="bolt">
+    For new workspaces, Vera One uses your user type and primary goal to surface benchmark CPLs and network patterns relevant to your industry — giving you a starting target even before your own data accumulates.
+  </Card>
+</CardGroup>
+
+## The network effect
+
+Vera One's benchmarks improve as more agencies use VERA. When a workspace's performance data is included in the network, it contributes to industry-level CPL, CTR, show rate, and close rate benchmarks. Every other agency in the same industry segment benefits from more accurate comparison data.
+
+The network uses a quality-gated contribution model:
+
+- Workspaces classified as **outperformers** contribute at full weight.
+- Workspaces with unusually high CPL or low conversion rates contribute at reduced weight while the signal is re-evaluated.
+- Workspaces that recover from underperformance trigger a pattern extraction — the "flip" is analyzed and the recovery pattern is made available to other underperforming workspaces in the same industry.
+
+<Note>
+  All benchmark contributions are anonymized and aggregated by segment. VERA never exposes individual workspace data to other accounts.
+</Note>
+
+## Where to view Vera One insights
+
+All Vera One outputs are accessible from the VERA dashboard:
+
+| Surface | What you see |
+|---|---|
+| **Intelligence** page | The full signal feed with severity-tagged events from all connected platforms |
+| **Dashboard** | Quick-wins card, campaign health summary, and top alerts |
+| **Pipeline** page | Lead priority feed — top 10 leads ranked by score with reasoning and recommended action |
+| **Clients** page | Per-client churn risk score and ICP health |
+| **Reports** page | Funnel attribution chart and goal alignment status |
+
+The Intelligence page is the best place to start when diagnosing a campaign issue or understanding what Vera One has detected across your accounts.

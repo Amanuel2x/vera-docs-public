@@ -1,0 +1,58 @@
+---
+title: "API authentication with X-API-Key"
+description: "Pass your API key in the X-API-Key header on every VERA API request. Find your key in workspace settings and rotate it whenever you need to."
+---
+
+Every request to the VERA REST API must include your workspace API key. The key is passed as a request header — not in the URL or request body.
+
+## The X-API-Key header
+
+```bash
+curl https://api.verahq.ai/api/v1/clients/{workspace_id} \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+The header name is case-insensitive, but `X-API-Key` is the canonical form used throughout this documentation.
+
+## Getting your API key
+
+1. Log in to your VERA dashboard.
+2. Go to **Settings → Workspace**.
+3. Copy the API key shown in the **API Access** section.
+
+Your key is scoped to your workspace. Every API request is validated against the workspace that issued the key — you cannot use your key to access another workspace's data.
+
+<Warning>
+Treat your API key like a password. Do not embed it in client-side code, commit it to version control, or share it in public channels. If a key is compromised, regenerate it immediately from workspace settings. All existing sessions using the old key will stop working as soon as the key is rotated.
+</Warning>
+
+## Unauthenticated endpoints
+
+The following endpoints do not require an `X-API-Key` header:
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET /health` | Service liveness probe |
+| `GET /p/{slug}` | Publicly published landing pages |
+| `GET /track/{id}` | Conversion and retargeting pixel |
+| Webhook paths | Inbound callbacks from Meta, GHL, Stripe, and Calendly |
+
+## Error responses
+
+**Missing header**
+
+```json
+{
+  "detail": "Invalid API key"
+}
+```
+
+**Invalid key**
+
+```json
+{
+  "detail": "Invalid API key"
+}
+```
+
+Both cases return HTTP `401 Unauthorized`. Check that the header name is spelled correctly (`X-API-Key`) and that you are using the key for the correct workspace.

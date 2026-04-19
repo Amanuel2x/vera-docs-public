@@ -1,0 +1,81 @@
+---
+title: "Connect Fathom Meeting Recordings to VERA"
+description: "Sync Fathom meeting recordings into VERA and run AI analysis to extract call scores, sentiment, action items, objections, and buying signals."
+---
+
+Connecting Fathom brings your meeting recordings into VERA's intelligence layer. Once connected, VERA can list your recorded meetings, pull transcripts and summaries, and run the `meeting-analysis` skill to score calls and surface actionable insights.
+
+## What connecting Fathom unlocks
+
+- **Meeting sync** — all your Fathom recorded meetings are available in VERA, including titles, participants, dates, and durations
+- **Transcript and summary access** — full transcripts and Fathom-generated summaries are pulled for each meeting
+- **AI meeting analysis** — the `meeting-analysis` skill scores the call (0–100), classifies sentiment, extracts action items, identifies objections, and surfaces buying signals
+- **Intelligence events** — every analyzed meeting logs a signal to the Vera One intelligence layer, feeding lead scoring and client health tracking
+
+## How to connect
+
+<Steps>
+  <Step title="Go to Setup">
+    In the VERA dashboard, navigate to **Settings → Setup**.
+  </Step>
+  <Step title="Click Connect on the Fathom card">
+    VERA redirects you to Fathom's OAuth consent screen.
+  </Step>
+  <Step title="Authorize VERA">
+    Sign in to Fathom and grant VERA access. VERA requests the `public_api` scope.
+  </Step>
+  <Step title="Return to VERA">
+    After authorizing, Fathom redirects you back to the Setup page. VERA immediately begins a background sync of your recent meetings.
+  </Step>
+</Steps>
+
+## Token auto-refresh
+
+VERA automatically refreshes your Fathom access token when it expires. If a request to Fathom returns a `401 Unauthorized` response, VERA uses the stored refresh token to obtain a new access token and retries the request — without any action required from you.
+
+<Note>
+  Auto-refresh requires a valid refresh token stored from your original OAuth authorization. If you revoke VERA's access in Fathom, you will need to reconnect from the Setup page.
+</Note>
+
+## What data syncs
+
+| Field | Description |
+|---|---|
+| Meeting title | Name of the recorded meeting |
+| Participants / attendees | Names of people on the call |
+| Meeting date and duration | When the meeting occurred and how long it ran |
+| Transcript | Full meeting transcript |
+| Summary | Fathom-generated summary of the call |
+
+## How to analyze a meeting
+
+<Steps>
+  <Step title="Go to Intelligence">
+    In the VERA dashboard, navigate to **Intelligence**.
+  </Step>
+  <Step title="Select a meeting">
+    Find the meeting you want to analyze in the meetings list.
+  </Step>
+  <Step title="Click Analyze">
+    VERA runs the `meeting-analysis` skill on the transcript and summary. The skill uses Claude to produce a structured analysis.
+  </Step>
+</Steps>
+
+The analysis result includes:
+
+| Output | Description |
+|---|---|
+| `call_score` | 0–100 score reflecting overall call quality |
+| `sentiment` | `positive`, `neutral`, or `negative` |
+| `transcript_summary` | AI-generated summary of what was discussed |
+| `action_items` | Follow-up tasks identified from the conversation |
+| `objections` | Objections raised by the prospect |
+| `buying_signals` | Indicators of purchase intent detected in the conversation |
+
+<Tip>
+  You can associate a meeting analysis with a specific client by passing a `client_id` when triggering the analysis. This links the call score and signals to the client's intelligence profile.
+</Tip>
+
+## Syncing meetings in the background
+
+VERA's background task scheduler automatically syncs new Fathom meetings every 2 hours. You do not need to manually trigger a sync after each meeting — new recordings appear in VERA automatically.

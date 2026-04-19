@@ -1,0 +1,125 @@
+---
+title: "AI skills — run Claude-powered analyses on your data"
+description: "VERA ships with 11 built-in AI skills powered by Claude. Each skill pulls live data from your integrations and returns structured output."
+---
+
+Skills are VERA's on-demand AI analysis engine. Each skill connects to your live data — Meta campaigns, GHL contacts, Fathom recordings, your client's website — runs a Claude-powered analysis, and returns a structured result you can act on immediately.
+
+## The 11 built-in skills
+
+<AccordionGroup>
+  <Accordion title="meta-ads-analysis">
+    **Category:** Ads
+
+    Pulls live Meta campaign data and returns a full performance analysis with a health score, CPL trend assessment, top performer and biggest issue identification, budget recommendations, and prioritized next actions.
+  </Accordion>
+  <Accordion title="seo-audit">
+    **Category:** SEO
+
+    Fetches a live page from the client's website and returns a complete SEO audit — overall score, critical issues, technical SEO breakdown, on-page analysis, and a prioritized list of quick wins.
+
+    Results are cached for 24 hours to avoid redundant crawls.
+  </Accordion>
+  <Accordion title="content-writing">
+    **Category:** Content
+
+    Generates ad copy, social posts, emails, blog posts, and offer copy tailored to the client's industry, audience, and goals. Accepts a content type, brief, and optional tone override.
+  </Accordion>
+  <Accordion title="campaign-builder">
+    **Category:** Campaigns
+
+    Analyzes your workspace's historical campaign data, industry benchmarks, and Vera One network intelligence to build fully optimized campaign settings — including CPL and ROAS predictions — before you spend a dollar.
+  </Accordion>
+  <Accordion title="campaign-monitor">
+    **Category:** Campaigns
+
+    Monitors live campaign performance against historical baselines and Vera One benchmarks. Flags underperformers, recommends budget adjustments, and predicts month-end outcomes. Runs every 4 hours automatically.
+
+    Results are cached for 1 hour to prevent redundant API calls.
+  </Accordion>
+  <Accordion title="meeting-analysis">
+    **Category:** Intelligence
+
+    Analyzes a Fathom sales call recording for buying signals, objections, sentiment, and call score. Returns a summary, action items, deal probability, and recommended next steps.
+  </Accordion>
+  <Accordion title="lead-scorer">
+    **Category:** Intelligence
+
+    Scores a lead 0–100 across fit, engagement, timing, and intent dimensions. Returns the composite score, a per-dimension breakdown, reasoning, and a recommended action. Runs on a 6-hour schedule automatically.
+  </Accordion>
+  <Accordion title="weekly-summary">
+    **Category:** Reporting
+
+    Generates a concise weekly performance summary for a client — key wins, concerns, action items, and a metrics snapshot. Auto-generates every Friday at 9am UTC and can be triggered on demand.
+  </Accordion>
+  <Accordion title="monthly-report">
+    **Category:** Reporting
+
+    Generates a complete monthly report narrative from campaign data, SEO metrics, and client goals — including an executive summary, campaign section, SEO section, and next-month plan. Auto-generates on the 1st of each month at 7am UTC.
+  </Accordion>
+  <Accordion title="outbound-email-writer">
+    **Category:** Outbound
+
+    Writes a personalized cold email for a specific step in an outbound sequence. Takes into account the step number, total sequence length, target audience, and previous steps to maintain coherent messaging across the sequence.
+  </Accordion>
+  <Accordion title="outbound-sequence-builder">
+    **Category:** Outbound
+
+    Designs a complete multi-step outbound email sequence — step strategy, timing between touches, and expected metrics. Use this before `outbound-email-writer` to establish the sequence structure.
+  </Accordion>
+</AccordionGroup>
+
+## Running a skill
+
+<Steps>
+  <Step title="Navigate to a client">
+    Open any client from the Clients page.
+  </Step>
+  <Step title="Open the Skills tab">
+    Select the **Skills** tab in the client detail view.
+  </Step>
+  <Step title="Select and run a skill">
+    Choose the skill you want to run and click **Run**. VERA fetches the relevant live data, runs the Claude analysis, and displays the structured output.
+  </Step>
+</Steps>
+
+You can also run any skill via the API:
+
+```bash
+POST https://api.verahq.ai/api/v1/skills/{skill_id}/run
+
+{
+  "client_id": "your-client-id",
+  "inputs": {}
+}
+```
+
+The API enforces a rate limit of 20 skill runs per 60 seconds per workspace.
+
+## Skill caching
+
+VERA caches certain skill results to avoid redundant analysis and speed up repeat requests:
+
+| Skill | Cache TTL |
+|-------|-----------|
+| `seo-audit` | 24 hours |
+| `campaign-monitor` | 1 hour |
+| `weekly-summary` | 24 hours |
+| `monthly-report` | 24 hours |
+| `lead-scorer` | 30 minutes |
+
+Generative skills — `content-writing`, `outbound-email-writer`, `outbound-sequence-builder` — are never cached, so every run produces fresh output.
+
+## Skill history
+
+Every skill run is recorded. You can view all past runs and their outputs for any client:
+
+```bash
+GET https://api.verahq.ai/api/v1/skills/runs/{client_id}
+```
+
+The response includes the run ID, skill ID, status, output, cost in USD, and timestamp for each run, ordered newest first.
+
+<Note>
+Skills are powered by Claude Sonnet 4.6 by default. `campaign-monitor`, `seo-audit`, and `lead-scorer` are routed to Claude Haiku for lower latency and cost. Strategy-level analysis uses Claude Opus 4.6.
+</Note>

@@ -1,0 +1,122 @@
+---
+title: "Campaign management in VERA"
+description: "Build, launch, pause, and monitor Meta Ads and Google Ads campaigns from one dashboard — with AI-assisted launch and continuous performance monitoring."
+---
+
+VERA gives you a single place to view, control, and launch campaigns across Meta Ads and Google Ads. All reads and writes go through VERA's platform-agnostic layer, so every action is workspace-isolated, client-verified, and logged to the intelligence feed.
+
+## Viewing campaigns
+
+The Campaigns page shows every active campaign across all your clients. VERA fetches live data from Meta and Google simultaneously and merges them into one list.
+
+You can filter campaigns by:
+
+- **Platform** — Meta or Google
+- **Status** — active, paused, or removed
+- **Client** — narrow the view to a single client's campaigns
+
+Each campaign row shows the key metrics VERA tracks:
+
+| Metric | Description |
+|--------|-------------|
+| Spend | Total ad spend for the selected date range |
+| Impressions | Number of times the ad was shown |
+| Clicks | Total link clicks |
+| CPL | Cost per lead (spend ÷ conversions) |
+| CTR | Click-through rate as a percentage |
+| ROAS | Return on ad spend (where conversion value tracking is active) |
+
+The default date range is the last 30 days. You can switch to last 7, 14, or 90 days.
+
+## Pausing and resuming campaigns
+
+You can pause or resume any campaign directly from the dashboard or via the API.
+
+<Tabs>
+  <Tab title="Dashboard">
+    Open the campaign row, then click **Pause** or **Resume**. The change takes effect immediately on the platform.
+  </Tab>
+  <Tab title="API">
+    ```bash
+    # Pause a Meta campaign
+    POST https://api.verahq.ai/api/v1/campaigns/{workspace_id}/{client_id}/meta/{campaign_id}/pause
+
+    # Resume a Meta campaign
+    POST https://api.verahq.ai/api/v1/campaigns/{workspace_id}/{client_id}/meta/{campaign_id}/resume
+
+    # Same pattern for Google — replace "meta" with "google"
+    ```
+  </Tab>
+</Tabs>
+
+<Warning>
+Pausing a campaign stops all delivery immediately. If you use the Action Engine, destructive actions like `pause_campaign` require user confirmation before executing by default.
+</Warning>
+
+## Updating campaign budgets
+
+You can adjust the daily budget for any campaign without leaving VERA.
+
+```bash
+POST https://api.verahq.ai/api/v1/campaigns/{workspace_id}/{client_id}/{platform}/{campaign_id}/budget
+
+{
+  "amount": 150.00
+}
+```
+
+`amount` is in USD. VERA converts to the platform's native unit (cents for Meta, micros for Google) before sending the write.
+
+## VERA Campaign Builder
+
+The Campaign Builder is VERA's AI-assisted launch flow. It guides you from a blank brief to a live campaign structure in one session.
+
+<Steps>
+  <Step title="Create a campaign draft">
+    Navigate to **Campaigns → Build with VERA**. Select a platform (Meta or Google), client, campaign objective, daily budget, and target audience. You can leave fields blank — VERA fills them in the next step.
+
+    Supported Meta objectives: `lead_generation`, `conversions`, `traffic`, `reach`, `engagement`, `app_installs`.
+  </Step>
+  <Step title="Run VERA Recommend">
+    Click **Recommend**. VERA analyzes your workspace's historical campaign data and Vera One network benchmarks, then auto-fills any blank fields — targeting, optimization goal, billing event, and CPL target.
+
+    VERA shows its reasoning in plain language alongside every recommendation. If your confidence score is below 70, VERA flags it and asks you to review manually before proceeding.
+  </Step>
+  <Step title="Review warnings">
+    VERA surfaces warnings before you spend anything. Common warnings include:
+
+    - No Meta pixel linked to the client
+    - No landing page associated with the campaign
+    - Budget below the recommended minimum for the objective
+    - Cold start — fewer than 5 historical campaigns, so recommendations rely on network data only
+
+    <Note>
+    A cold-start flag means VERA is drawing on Vera One network benchmarks rather than your own workspace history. Recommendations are still valid — just treat them as starting points.
+    </Note>
+  </Step>
+  <Step title="Confirm and launch">
+    Set the draft status to **Confirmed**, then click **Launch**. VERA creates all required Meta objects in a single API call:
+
+    - Campaign
+    - Ad set (with targeting and budget)
+    - Ad creative and ad (if a landing page and page ID are available)
+
+    All objects are created with `status: PAUSED`. Review in Meta Ads Manager and activate when you're ready.
+
+    Every launched campaign is recorded in the VERA intelligence feed so Vera One can track performance from day one.
+  </Step>
+</Steps>
+
+## Campaign monitoring
+
+The `campaign-monitor` skill runs every 4 hours across all active campaigns. It compares live performance against historical baselines and Vera One industry benchmarks, then fires alerts when it detects anomalies.
+
+Common alerts:
+
+- **CPL spike** — cost per lead exceeds 2× the benchmark for this industry and platform
+- **Budget health** — predicted month-end spend is on track to over- or under-deliver
+- **Underperformer** — a campaign is consistently below baseline with no recent optimization
+
+<Tip>
+Connect the `campaign_cpl_high` trigger in the Action Engine to auto-pause or auto-alert when CPL spikes — without manual monitoring.
+</Tip>

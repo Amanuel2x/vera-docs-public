@@ -1,0 +1,128 @@
+---
+title: "AI landing page builder with pixel tracking"
+description: "Generate conversion-optimized landing pages from a brief, with automatic pixel injection for Meta, Google, and TikTok — no manual setup needed."
+---
+
+VERA's landing page builder creates complete, conversion-ready pages from a short brief. Every generated page gets automatic pixel injection for all your connected ad platforms, built-in lead capture that syncs to GoHighLevel, and engagement tracking that feeds back into Vera One.
+
+## Building a page
+
+<Steps>
+  <Step title="Navigate to Pages → New Page">
+    Open **Pages** in the sidebar and click **New Page** to open the builder wizard.
+  </Step>
+  <Step title="Enter your brief">
+    Provide three inputs:
+
+    - **Offer** — what you're promoting (e.g., "Free kitchen renovation consultation")
+    - **Target audience** — who the page is for (e.g., "Homeowners in suburban Atlanta aged 35–55")
+    - **Goal** — the primary conversion action (e.g., "Book a call")
+
+    You can also supply a brand color, logo URL, hero image or video URL, and a reference page URL for tone and style guidance.
+  </Step>
+  <Step title="VERA generates the page">
+    VERA detects the page objective from your brief — lead gen, VSL, event, content magnet, booking, or sales — selects a matching template, then uses Claude to write the headline, subheadline, body copy, CTA text, and form title.
+
+    Vera One benchmark context is injected into the copy prompt when available, so the copy reflects what's converting for similar agencies in your industry.
+  </Step>
+  <Step title="Publish">
+    Click **Publish**. The page goes live immediately at its unique VERA-hosted URL. You can also point a custom domain to the page after publishing.
+  </Step>
+</Steps>
+
+Via the API:
+
+```bash
+POST https://api.verahq.ai/api/v1/landing-pages/{workspace_id}/generate
+
+{
+  "client_id": "your-client-id",
+  "offer": "Free kitchen renovation consultation",
+  "audience": "Homeowners aged 35–55 in suburban Atlanta",
+  "goal": "Book a call",
+  "brand_color": "#1a73e8"
+}
+```
+
+## Pixel injection
+
+VERA automatically injects tracking scripts for every ad platform connected to your workspace — no manual pixel setup required.
+
+| Platform | What gets injected |
+|----------|--------------------|
+| **Meta** | `fbq('init')` + PageView on load, Lead + CompleteRegistration on form submit |
+| **Google** | `gtag` config + conversion event on form submit |
+| **TikTok** | `ttq.load()` + SubmitForm + CompleteRegistration on form submit |
+
+All Meta events include a unique `event_id` for server-side deduplication with Meta CAPI.
+
+<Note>
+If a client has a Meta pixel ID set in their profile, VERA uses the client pixel on pages associated with that client — overriding the workspace-level pixel.
+</Note>
+
+## Lead capture
+
+When a visitor submits the form on a published page, VERA:
+
+1. Creates a GoHighLevel contact automatically (if GoHighLevel is connected to your workspace)
+2. Tags the contact with `vera-lead`, the page objective slug, and the page slug
+3. Fires lead events to all connected ad platforms simultaneously via the funnel event bus
+
+If the visitor clicked through from an ad, VERA also matches the `fbclid` or `gclid` from the URL to the contact record for attribution.
+
+<Warning>
+Lead capture requires the visitor to submit the form with at least an email address or phone number. Pageviews without a form submission are tracked but do not create a GHL contact.
+</Warning>
+
+## Video milestone tracking
+
+If your page includes a video element and Meta is connected, VERA injects engagement tracking that fires at four milestones:
+
+- 25% watched
+- 50% watched
+- 75% watched
+- 100% watched
+
+Each milestone fires a custom `VideoView{percent}` event to Meta via `fbq('trackCustom')` and a `ViewContent` event to TikTok. These signals feed back into Vera One's intelligence layer and improve ad algorithm optimization for video campaigns.
+
+## Page URL format
+
+Every published page is accessible at:
+
+```
+https://api.verahq.ai/p/{slug}
+```
+
+The slug is auto-generated from the page headline, de-duped if needed. You can update it after generation:
+
+```bash
+PATCH https://api.verahq.ai/api/v1/landing-pages/{workspace_id}/{page_id}
+
+{
+  "slug": "kitchen-renovation-atlanta"
+}
+```
+
+To use a custom domain, set `custom_domain` on the page record and point your DNS to VERA.
+
+## Managing pages
+
+```bash
+# List all pages for a workspace
+GET https://api.verahq.ai/api/v1/landing-pages/{workspace_id}
+
+# Get a single page
+GET https://api.verahq.ai/api/v1/landing-pages/{workspace_id}/{page_id}
+
+# Publish a draft page
+POST https://api.verahq.ai/api/v1/landing-pages/{workspace_id}/{page_id}/publish
+
+# Delete a page
+DELETE https://api.verahq.ai/api/v1/landing-pages/{workspace_id}/{page_id}
+```
+
+Each page record tracks `page_views`, `leads`, and `conversion_rate` in real time as the tracking script fires events.
+
+<Tip>
+Add a countdown timer to increase urgency on time-limited offers. Pass `countdown_minutes` in the generate request and VERA injects a live countdown into the page automatically.
+</Tip>

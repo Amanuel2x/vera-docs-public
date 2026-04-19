@@ -1,0 +1,67 @@
+---
+title: "Connect Google Ads to VERA"
+description: "Connect your Google Ads account to pull campaign performance data and route conversion events from VERA's funnel event bus to your campaigns."
+---
+
+Connecting Google Ads gives VERA read access to your campaign performance data — spend, impressions, clicks, and conversions — and routes conversion events from VERA's funnel event bus to your Google Ads account once write access is approved.
+
+## What connecting Google Ads unlocks
+
+- **Campaign performance reads** — spend, impressions, clicks, conversions, and conversion value per campaign over any date range
+- **Account listing** — all customer accounts accessible through your Manager (MCC) account
+- **Conversion forwarding** — booking and purchase events from Calendly and Stripe are routed to Google Ads via the funnel event bus
+
+## Current status
+
+<Warning>
+  **Read access is live.** Campaign data is available immediately after connecting.
+
+  **Write access (launch/pause campaigns) is not yet available.** Google Ads API write operations require Standard Access approval from Google. VERA's developer account is currently at Basic Access level. Write operations will be enabled once Standard Access is approved at the [Google Ads API Center](https://ads.google.com/aw/apicenter).
+</Warning>
+
+## How to connect
+
+<Steps>
+  <Step title="Go to Setup">
+    In the VERA dashboard, navigate to **Settings → Setup**.
+  </Step>
+  <Step title="Click Connect on the Google Ads card">
+    VERA redirects you to Google's OAuth consent screen.
+  </Step>
+  <Step title="Sign in and authorize">
+    Sign in with the Google account that has access to your Google Ads MCC. Grant the requested permissions. VERA requests the `https://www.googleapis.com/auth/adwords` scope.
+  </Step>
+  <Step title="Return to VERA">
+    After authorizing, Google redirects you back to the Setup page with your Google Ads connection active.
+  </Step>
+</Steps>
+
+## Attach a Google Ads customer ID to a client
+
+To see campaign data filtered per client, set the **Google Ads Customer ID** on the client record:
+
+1. Go to **Clients** and open the client.
+2. Edit the client and enter the Google Ads Customer ID (the 10-digit leaf account ID, without dashes — e.g. `1234567890`).
+3. Save. Campaign data for that account will now appear on the client's profile and in the Campaigns view.
+
+<Note>
+  VERA operates through a Manager (MCC) account. The Customer ID you set on each client must be the **leaf account ID** — the individual advertiser account, not the MCC ID itself.
+</Note>
+
+## What campaign data looks like
+
+When you request campaigns for a customer account, VERA returns the following fields per campaign:
+
+| Field | Description |
+|---|---|
+| `id` | Google Ads campaign ID |
+| `name` | Campaign name |
+| `status` | `ENABLED`, `PAUSED`, or `REMOVED` |
+| `channel_type` | Advertising channel (e.g. `SEARCH`, `DISPLAY`, `PERFORMANCE_MAX`) |
+| `daily_budget_usd` | Daily budget in USD |
+| `spend_30d_usd` | Total spend over the last 30 days |
+| `impressions_30d` | Total impressions over the last 30 days |
+| `clicks_30d` | Total clicks over the last 30 days |
+| `conversions_30d` | Total conversions over the last 30 days |
+
+Campaign-level daily insights (date, spend, impressions, clicks, conversions, CTR) are also available for any date range.

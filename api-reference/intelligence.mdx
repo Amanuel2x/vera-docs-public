@@ -1,0 +1,276 @@
+---
+title: "Vera One Intelligence API — signals and funnel"
+description: "Query the live event feed, notable anomalies, metric trends, full funnel attribution, churn risk scores, and network quick wins from Vera One."
+---
+
+The Intelligence API is VERA's decision layer. It surfaces what's happening across your clients, compares your metrics against network benchmarks, and tells you where to focus next. All endpoints are read-only — no AI calls are made on demand; data is derived from pre-computed tables.
+
+---
+
+## Intelligence event feed
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/feed`
+
+Returns recent intelligence events from across your workspace — campaign writes, lead events, stage changes, and more.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Query parameters
+
+<ParamField query="limit" type="integer">
+  Number of events to return. Defaults to `50`, maximum `200`.
+</ParamField>
+
+<ParamField query="source" type="string">
+  Filter by source: `meta`, `google`, `ghl`, `report`, `action_engine`, etc.
+</ParamField>
+
+```bash
+curl "https://api.verahq.ai/api/v1/intelligence/ws_abc123/feed?limit=20&source=meta" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Intelligence summary
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/summary`
+
+Returns a high-level metrics summary across all clients — total spend, leads, CPL, and MRR trends.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Query parameters
+
+<ParamField query="days" type="integer">
+  Lookback window in days. Defaults to `30`.
+</ParamField>
+
+```bash
+curl "https://api.verahq.ai/api/v1/intelligence/ws_abc123/summary?days=7" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Signals
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/signals`
+
+Returns notable anomalies and deviations from the past N days — CPL spikes, spend drops, conversion rate changes, and other signals that deviate from the norm.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Query parameters
+
+<ParamField query="days" type="integer">
+  Lookback window in days. Defaults to `7`.
+</ParamField>
+
+```bash
+curl "https://api.verahq.ai/api/v1/intelligence/ws_abc123/signals?days=14" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Trends
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/trends`
+
+Compares the last 7 days against the prior 7 days for key metrics. Shows what is moving and in which direction across all clients.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+```bash
+curl https://api.verahq.ai/api/v1/intelligence/ws_abc123/trends \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Funnel attribution
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/funnel`
+
+Returns a full attribution funnel from ad spend to closed revenue: spend → leads → booked appointments → showed → closed → revenue. This is the single most important metric — cost per closed deal, not just CPL.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Query parameters
+
+<ParamField query="client_id" type="string">
+  Scope the funnel to a single client. Omit for workspace-level aggregation.
+</ParamField>
+
+<ParamField query="days" type="integer">
+  Lookback window in days. Defaults to `30`.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl "https://api.verahq.ai/api/v1/intelligence/ws_abc123/funnel?client_id=clt_9f2e1a&days=30" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "workspace_id": "ws_abc123",
+      "client_id": "clt_9f2e1a",
+      "days": 30,
+      "funnel": {
+        "spend": 6200.00,
+        "leads": 148,
+        "booked": 31,
+        "showed": 24,
+        "closed": 9,
+        "revenue": 31500.00
+      },
+      "rates": {
+        "lead_to_book": 0.209,
+        "book_to_show": 0.774,
+        "show_to_close": 0.375,
+        "lead_to_close": 0.061
+      },
+      "cost_per_closed": 688.89
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Churn risk
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/churn-risk`
+
+Returns churn risk scores (0–100) for all clients in your workspace. Clients scoring 70 or above are flagged as high risk.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Response fields
+
+<ResponseField name="workspace_id" type="string">Your workspace ID.</ResponseField>
+<ResponseField name="clients" type="array">Array of client churn risk objects.</ResponseField>
+<ResponseField name="high_risk_count" type="integer">Number of clients with `risk_level: high`.</ResponseField>
+<ResponseField name="total_clients" type="integer">Total clients scored.</ResponseField>
+
+Each client object in `clients`:
+
+<ResponseField name="client_id" type="string">VERA client ID.</ResponseField>
+<ResponseField name="client_name" type="string">Client display name.</ResponseField>
+<ResponseField name="risk_score" type="integer">Churn risk score, 0–100.</ResponseField>
+<ResponseField name="risk_level" type="string">`low`, `medium`, or `high`.</ResponseField>
+<ResponseField name="signals" type="array">Contributing risk signals.</ResponseField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl https://api.verahq.ai/api/v1/intelligence/ws_abc123/churn-risk \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "workspace_id": "ws_abc123",
+      "clients": [
+        {
+          "client_id": "clt_9f2e1a",
+          "client_name": "Apex Dental Group",
+          "risk_score": 72,
+          "risk_level": "high",
+          "signals": [
+            "No campaign activity in 18 days",
+            "MRR declined last month",
+            "No booked calls in 30 days"
+          ]
+        },
+        {
+          "client_id": "clt_8b3d2c",
+          "client_name": "Peak Fitness Studio",
+          "risk_score": 28,
+          "risk_level": "low",
+          "signals": []
+        }
+      ],
+      "high_risk_count": 1,
+      "total_clients": 2
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Goal alignment
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/goal-alignment`
+
+Checks whether active campaigns match your workspace's stated goals. Returns a per-client alignment assessment.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+```bash
+curl https://api.verahq.ai/api/v1/intelligence/ws_abc123/goal-alignment \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Quick wins
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/quick-wins`
+
+Returns what is working across similar agencies on the VERA network right now — patterns, objectives, and tactics that are outperforming benchmarks in your industry.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+```bash
+curl https://api.verahq.ai/api/v1/intelligence/ws_abc123/quick-wins \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Lead priority
+
+<br />
+
+`GET /api/v1/intelligence/{workspace_id}/lead-priority`
+
+Returns the top leads ranked by score with deterministic recommended actions. See the [Leads API](/api-reference/leads#lead-priority-feed) for full documentation of this endpoint.

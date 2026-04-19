@@ -1,0 +1,137 @@
+---
+title: "Action Engine — automate responses to Vera One signals"
+description: "Define rules that fire automatically when Vera One detects a signal — pause campaigns, tag contacts, send Telegram alerts, and trigger AI skills."
+---
+
+The Action Engine turns Vera One intelligence into automated responses. You define rules — when a specific signal fires, execute a specific action. Rules run continuously in the background, so your agency responds to CPL spikes, hot leads, and churn risks without manual intervention.
+
+## Rule anatomy
+
+Every rule has five components:
+
+| Component | Description |
+|-----------|-------------|
+| **Trigger type** | The signal that activates the rule |
+| **Trigger filter** | Conditions that must be true on the signal for the rule to fire (e.g., `score_gte: 80`) |
+| **Action type** | What VERA does when the rule fires |
+| **Cooldown** | Minimum hours between firings of the same rule |
+| **Daily cap** | Maximum times the rule can fire in a 24-hour window |
+
+## Available trigger types
+
+| Trigger | When it fires |
+|---------|--------------|
+| `alert_created` | A new alert is created in VERA (e.g., CPL spike, 3× kill rule) |
+| `lead_scored` | A lead's score is updated by the scoring engine |
+| `payment_received` | A payment is recorded via Stripe |
+| `ghl_stage_change` | A contact moves to a new pipeline stage in GoHighLevel |
+| `funnel_event` | A normalized funnel event fires (booking, close, etc.) |
+| `workspace_flip` | A workspace's Vera One classification changes (e.g., underperformer → on_track) |
+| `churn_risk` | A client's churn score crosses a threshold |
+| `campaign_cpl_high` | A campaign's CPL exceeds 2× the Vera One benchmark |
+
+## Available action types
+
+<AccordionGroup>
+  <Accordion title="Campaign controls">
+    - **`pause_campaign`** — pause a Meta or Google campaign. Requires user confirmation by default.
+    - **`resume_campaign`** — resume a paused campaign.
+    - **`adjust_budget`** — change a campaign's daily budget.
+  </Accordion>
+  <Accordion title="CRM actions">
+    - **`create_ghl_task`** — create a task in GoHighLevel tied to a contact.
+    - **`tag_contact`** — add tags to a GHL contact. VERA merges new tags with existing ones — it never replaces all tags.
+  </Accordion>
+  <Accordion title="Notifications">
+    - **`create_alert`** — fire an in-app alert in VERA's intelligence feed.
+    - **`send_telegram`** — send a message to a Telegram channel or user.
+    - **`send_email`** — send a transactional email via Resend.
+  </Accordion>
+  <Accordion title="Intelligence and sequences">
+    - **`run_skill`** — trigger any of VERA's 11 AI skills automatically.
+    - **`log_event`** — write a custom intelligence event to the Vera One feed.
+    - **`enroll_sequence`** — add a contact to an outbound email sequence.
+  </Accordion>
+  <Accordion title="Network-level actions">
+    - **`apply_network_pattern`** — push a recovery pattern from the Vera One pattern library to underperforming accounts in the same industry.
+    - **`recommend_objective_shift`** — suggest a better campaign objective based on what's working for similar agencies in the Vera One network.
+  </Accordion>
+</AccordionGroup>
+
+## Default rules
+
+VERA seeds 8 default rules when a workspace is set up. You can disable or modify any of them.
+
+| Rule | Trigger | Action |
+|------|---------|--------|
+| 3× Kill → Pause Campaign | `alert_created` (3× kill rule) | `pause_campaign` (requires confirmation) |
+| CPL Spike → Alert | `alert_created` (CPL spike) | `create_alert` |
+| Hot Lead → GHL Task | `lead_scored` (score ≥ 80) | `create_ghl_task` |
+| Payment Received → Alert | `payment_received` | `create_alert` |
+| Churn Risk → Alert | `churn_risk` (score ≥ 70) | `create_alert` |
+| Close → Log Funnel Event | `ghl_stage_change` (closed) | `log_event` |
+| Fatigue Detected → Swap Creative | `fatigue_detected` | `swap_creative` |
+| Flip → Push Network Pattern | `workspace_flip` (to outperformer or on_track) | `apply_network_pattern` |
+
+To seed the defaults for a workspace:
+
+```bash
+POST https://api.verahq.ai/api/v1/actions/{workspace_id}/seed
+```
+
+This call is idempotent — running it multiple times will not create duplicate rules.
+
+## Confirmation flow
+
+Destructive actions — primarily `pause_campaign` — default to `requires_confirmation: true`. When a rule with confirmation enabled fires, VERA creates a `pending_action` alert in the intelligence feed instead of executing immediately. You confirm the action from the dashboard or via the API:
+
+```bash
+POST https://api.verahq.ai/api/v1/actions/{workspace_id}/executions/{execution_id}/confirm
+```
+
+<Warning>
+Setting `requires_confirmation: false` on a `pause_campaign` rule will cause VERA to pause campaigns automatically without any human review. Use this only when you trust the trigger conditions completely.
+</Warning>
+
+## Cooldown and daily cap
+
+- **Cooldown** prevents the same rule from firing more than once within a set window. For example, the Churn Risk rule has a 168-hour (7-day) cooldown so you don't get flooded with alerts for the same client.
+- **Daily cap** sets a hard maximum on how many times a rule can fire in any 24-hour period, across all entities.
+
+## Dry-run testing
+
+Before enabling a rule, test it with sample signal data:
+
+```bash
+POST https://api.verahq.ai/api/v1/actions/{workspace_id}/rules/{rule_id}/test
+
+{
+  "signal_data": {
+    "score": 85,
+    "contact_id": "abc123"
+  }
+}
+```
+
+The response tells you whether the filter matches, whether the rule would execute, what action it would take, and what Vera One intelligence context it would use — without actually running anything.
+
+## Managing rules via the API
+
+```bash
+# List all rules
+GET https://api.verahq.ai/api/v1/actions/{workspace_id}/rules
+
+# Create a rule
+POST https://api.verahq.ai/api/v1/actions/{workspace_id}/rules
+
+# Update a rule
+PATCH https://api.verahq.ai/api/v1/actions/{workspace_id}/rules/{rule_id}
+
+# Delete a rule
+DELETE https://api.verahq.ai/api/v1/actions/{workspace_id}/rules/{rule_id}
+
+# View execution history
+GET https://api.verahq.ai/api/v1/actions/{workspace_id}/executions
+```
+
+The execution log records every rule firing — trigger event, action taken, Vera One context snapshot, result, and any error — so you have a full audit trail.

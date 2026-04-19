@@ -1,0 +1,56 @@
+---
+title: "Connect Calendly Bookings to VERA"
+description: "Sync Calendly bookings into VERA and automatically forward confirmed booking events to Meta, TikTok, and Google Ads for accurate conversion attribution."
+---
+
+Connecting Calendly closes the loop between your ad spend and booked meetings. Every confirmed booking creates an intelligence event in Vera One and fires a conversion signal to all connected ad platforms — so Meta, TikTok, and Google Ads all learn from your booking outcomes.
+
+## What connecting Calendly unlocks
+
+- **Booking sync** — confirmed Calendly events appear in VERA with invitee details, event type, start time, and location
+- **Conversion forwarding** — every `invitee.created` webhook fires a booking conversion event to all connected ad platforms simultaneously via VERA's funnel event bus
+- **Lead cross-reference** — VERA cross-references booked invitee emails against your Meta leads, marking which leads converted to meetings
+- **Prospect funnel visibility** — bookings feed the **Meeting Set** stage in the prospect funnel view (Prospects → Contacted → Meeting Set → Proposal)
+
+## How to connect
+
+<Steps>
+  <Step title="Go to Setup">
+    In the VERA dashboard, navigate to **Settings → Setup**.
+  </Step>
+  <Step title="Click Connect on the Calendly card">
+    VERA redirects you to Calendly's OAuth consent screen.
+  </Step>
+  <Step title="Authorize VERA">
+    Sign in to Calendly and grant access. VERA requests the following scopes: `event_types:read`, `scheduled_events:read`, `scheduled_events:write`, `users:read`, `organizations:read`, `webhooks:read`, `webhooks:write`.
+  </Step>
+  <Step title="Return to VERA">
+    After authorizing, Calendly redirects you back to VERA. A webhook subscription is registered automatically so VERA receives booking events in real time.
+  </Step>
+</Steps>
+
+<Note>
+  The webhook subscription is registered automatically during the OAuth flow. VERA listens for `invitee.created`, `invitee.canceled`, and `invitee_no_show.created` events.
+</Note>
+
+## Token auto-refresh
+
+VERA automatically refreshes your Calendly access token when it expires. On any `401 Unauthorized` response from the Calendly API, VERA uses the stored refresh token to obtain a new access token and updates the stored credentials — no reconnection required.
+
+## How booking events reach your ad platforms
+
+When Calendly sends a confirmed booking event to VERA:
+
+1. VERA creates an `IntelligenceEvent` of type `booking` for the workspace.
+2. VERA dispatches a `CompleteRegistration` conversion event to all connected ad platforms (Meta CAPI, TikTok Events API, Google Ads Conversions) via the funnel event bus.
+3. VERA cross-references the invitee email against existing Meta leads and marks matched leads as `calendly_booked = true`.
+
+All three steps happen within the same webhook handler — typically within a few seconds of the booking being confirmed.
+
+<Tip>
+  Connecting Calendly alongside Meta Ads means Meta's algorithm receives a `CompleteRegistration` server-side event for every booked meeting. This improves optimization for lead generation campaigns and typically reduces CPL over time.
+</Tip>
+
+## Syncing bookings in the background
+
+In addition to real-time webhook events, VERA's background task scheduler syncs Calendly events every 4 hours to catch any events that may have been missed. Historical bookings from the past 90 days are available when you first connect.

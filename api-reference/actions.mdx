@@ -1,0 +1,346 @@
+---
+title: "Action Engine API — rules and execution history"
+description: "Create event-driven automation rules, review the execution audit log, dry-run rules with sample signals, and approve pending confirmation actions."
+---
+
+The Action Engine lets you define rules that fire automatically when VERA detects a signal — a CPL spike, a hot lead, a stage change, or a campaign fatigue event. Each rule has guards (cooldown, max fires per day, confirmation gates) to prevent runaway automation.
+
+---
+
+## Trigger types
+
+| Trigger type | When it fires |
+|--------------|---------------|
+| `alert_created` | A new alert is created in your workspace |
+| `lead_scored` | A lead score is computed or updated |
+| `payment_received` | A Stripe payment is received |
+| `churn_risk` | A churn risk score crosses a threshold |
+| `ghl_stage_change` | A GHL contact moves pipeline stages |
+| `fatigue_detected` | Creative fatigue is detected on a campaign |
+| `workspace_flip` | Your workspace moves to a new performance classification |
+
+## Action types
+
+| Action type | What it does |
+|-------------|--------------|
+| `pause_campaign` | Pauses a campaign on Meta or Google |
+| `resume_campaign` | Resumes a paused campaign |
+| `adjust_budget` | Changes a campaign's daily budget |
+| `create_ghl_task` | Creates a follow-up task in GoHighLevel |
+| `tag_contact` | Applies tags to a GHL contact |
+| `create_alert` | Creates a VERA alert visible in the dashboard |
+| `run_skill` | Runs a VERA skill |
+| `log_event` | Logs a custom event to the intelligence feed |
+| `enroll_sequence` | Enrolls a contact into an outbound email sequence |
+| `send_email` | Sends an email notification to the workspace owner |
+| `apply_network_pattern` | Pushes a recovery pattern alert to similar agencies |
+| `recommend_objective_shift` | Creates an alert recommending a campaign objective change |
+| `swap_creative` | Creates an alert flagging a fatigued creative for replacement |
+
+Destructive actions (`pause_campaign`, `adjust_budget`) default to `requires_confirmation: true`, which creates a `pending` execution that you must approve before it executes.
+
+---
+
+## Action rule object
+
+<ResponseField name="id" type="string">UUID of the rule.</ResponseField>
+<ResponseField name="workspace_id" type="string">Workspace this rule belongs to. `null` for network-scope rules.</ResponseField>
+<ResponseField name="name" type="string">Human-readable rule name.</ResponseField>
+<ResponseField name="enabled" type="boolean">Whether the rule is active.</ResponseField>
+<ResponseField name="trigger_type" type="string">Event that triggers this rule.</ResponseField>
+<ResponseField name="trigger_filter" type="object">Filter conditions evaluated against the signal data.</ResponseField>
+<ResponseField name="action_type" type="string">Action to execute when the rule fires.</ResponseField>
+<ResponseField name="action_config" type="object">Configuration passed to the action executor.</ResponseField>
+<ResponseField name="intelligence_feature" type="string">Intelligence context to inject when executing. `null` if not used.</ResponseField>
+<ResponseField name="cooldown_hours" type="integer">Minimum hours between fires for the same rule. Default `24`.</ResponseField>
+<ResponseField name="max_fires_per_day" type="integer">Maximum fires in a 24-hour window. Default `10`.</ResponseField>
+<ResponseField name="requires_confirmation" type="boolean">When `true`, creates a pending execution instead of executing immediately.</ResponseField>
+<ResponseField name="scope" type="string">`workspace` or `network`.</ResponseField>
+<ResponseField name="fire_count" type="integer">Total number of times this rule has fired.</ResponseField>
+<ResponseField name="last_fired_at" type="string">ISO 8601 timestamp of the most recent fire.</ResponseField>
+<ResponseField name="created_at" type="string">ISO 8601 creation timestamp.</ResponseField>
+
+---
+
+## List rules
+
+<br />
+
+`GET /api/v1/actions/{workspace_id}/rules`
+
+Returns all action rules for your workspace, including network-scope rules that apply to all workspaces.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Query parameters
+
+<ParamField query="enabled" type="boolean">Filter to enabled or disabled rules.</ParamField>
+<ParamField query="trigger_type" type="string">Filter by trigger type.</ParamField>
+<ParamField query="limit" type="integer">Maximum results. Defaults to `100`, maximum `500`.</ParamField>
+
+```bash
+curl "https://api.verahq.ai/api/v1/actions/ws_abc123/rules?enabled=true" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Create a rule
+
+<br />
+
+`POST /api/v1/actions/{workspace_id}/rules`
+
+Creates a new action rule.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Body parameters
+
+<ParamField body="name" type="string" required>Human-readable name for the rule.</ParamField>
+<ParamField body="trigger_type" type="string" required>Event type that activates this rule. See the trigger types table above.</ParamField>
+<ParamField body="action_type" type="string" required>Action to execute. Must be one of the valid action types listed above.</ParamField>
+<ParamField body="trigger_filter" type="object">Filter conditions evaluated against incoming signal data. Keys and values are signal-specific.</ParamField>
+<ParamField body="action_config" type="object">Configuration for the action executor. Keys vary by `action_type`.</ParamField>
+<ParamField body="intelligence_feature" type="string">Inject intelligence context before executing. Use `campaign` to enrich with campaign data.</ParamField>
+<ParamField body="cooldown_hours" type="integer">Minimum hours between fires. Defaults to `24`.</ParamField>
+<ParamField body="max_fires_per_day" type="integer">Maximum fires per day. Defaults to `10`.</ParamField>
+<ParamField body="requires_confirmation" type="boolean">When `true`, creates a pending execution instead of running immediately. Defaults to `false`.</ParamField>
+<ParamField body="scope" type="string">`workspace` (default) or `network`.</ParamField>
+<ParamField body="enabled" type="boolean">Whether the rule is active on creation. Defaults to `true`.</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X POST https://api.verahq.ai/api/v1/actions/ws_abc123/rules \
+      -H "X-API-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Hot Lead → GHL Task",
+        "trigger_type": "lead_scored",
+        "trigger_filter": {"score_gte": 80},
+        "action_type": "create_ghl_task",
+        "action_config": {
+          "title": "Follow up — hot lead (score 80+)"
+        },
+        "cooldown_hours": 48,
+        "max_fires_per_day": 20,
+        "requires_confirmation": false,
+        "enabled": true
+      }'
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "rule_a1b2c3",
+      "workspace_id": "ws_abc123",
+      "name": "Hot Lead → GHL Task",
+      "enabled": true,
+      "trigger_type": "lead_scored",
+      "trigger_filter": {"score_gte": 80},
+      "action_type": "create_ghl_task",
+      "action_config": {"title": "Follow up — hot lead (score 80+)"},
+      "intelligence_feature": null,
+      "cooldown_hours": 48,
+      "max_fires_per_day": 20,
+      "requires_confirmation": false,
+      "scope": "workspace",
+      "fire_count": 0,
+      "last_fired_at": null,
+      "created_at": "2026-04-19T10:30:00+00:00"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Update a rule
+
+<br />
+
+`PATCH /api/v1/actions/{workspace_id}/rules/{rule_id}`
+
+Updates one or more fields on an existing rule. All body parameters are optional.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="rule_id" type="string" required>The rule UUID.</ParamField>
+
+```bash
+curl -X PATCH https://api.verahq.ai/api/v1/actions/ws_abc123/rules/rule_a1b2c3 \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": false}'
+```
+
+---
+
+## Delete a rule
+
+<br />
+
+`DELETE /api/v1/actions/{workspace_id}/rules/{rule_id}`
+
+Permanently deletes an action rule.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="rule_id" type="string" required>The rule UUID.</ParamField>
+
+```bash
+curl -X DELETE https://api.verahq.ai/api/v1/actions/ws_abc123/rules/rule_a1b2c3 \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+```json
+{"deleted": "rule_a1b2c3"}
+```
+
+---
+
+## List executions
+
+<br />
+
+`GET /api/v1/actions/{workspace_id}/executions`
+
+Returns the execution audit log — every time an action rule evaluated, whether it fired, and what happened.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+### Query parameters
+
+<ParamField query="rule_id" type="string">Filter to a specific rule.</ParamField>
+<ParamField query="status" type="string">Filter by status: `pending`, `completed`, or `failed`.</ParamField>
+<ParamField query="limit" type="integer">Maximum results. Defaults to `50`, maximum `200`.</ParamField>
+<ParamField query="offset" type="integer">Pagination offset. Defaults to `0`.</ParamField>
+
+### Execution object fields
+
+<ResponseField name="id" type="string">UUID of the execution record.</ResponseField>
+<ResponseField name="workspace_id" type="string">Workspace ID.</ResponseField>
+<ResponseField name="rule_id" type="string">ID of the rule that fired.</ResponseField>
+<ResponseField name="trigger_event" type="object">The signal data that triggered the rule.</ResponseField>
+<ResponseField name="action_type" type="string">Action type that was executed.</ResponseField>
+<ResponseField name="action_config" type="object">Config passed to the executor.</ResponseField>
+<ResponseField name="intelligence_context" type="object">Enrichment data injected before execution.</ResponseField>
+<ResponseField name="action_result" type="object">Output from the executor. `null` for pending executions.</ResponseField>
+<ResponseField name="status" type="string">`pending`, `completed`, or `failed`.</ResponseField>
+<ResponseField name="error" type="string">Error message if `status` is `failed`.</ResponseField>
+<ResponseField name="entity_id" type="string">Relevant entity (e.g. contact ID, campaign ID).</ResponseField>
+<ResponseField name="executed_at" type="string">ISO 8601 execution timestamp.</ResponseField>
+
+---
+
+## Dry-run a rule
+
+<br />
+
+`POST /api/v1/actions/{workspace_id}/rules/{rule_id}/test`
+
+Evaluates a rule against sample signal data without executing it. Returns whether the filter would match, what action would run, and any intelligence context that would be injected.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="rule_id" type="string" required>The rule UUID to test.</ParamField>
+
+### Body parameters
+
+<ParamField body="signal_data" type="object" required>
+  Sample signal data to evaluate the rule against.
+</ParamField>
+
+<ParamField body="entity_id" type="string">
+  Optional entity ID to include in the simulation.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X POST https://api.verahq.ai/api/v1/actions/ws_abc123/rules/rule_a1b2c3/test \
+      -H "X-API-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "signal_data": {
+          "score": 85,
+          "contact_id": "ghl_contact_abc",
+          "signal_type": "lead_scored"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "rule_id": "rule_a1b2c3",
+      "rule_name": "Hot Lead → GHL Task",
+      "filter_match": true,
+      "would_execute": true,
+      "action_type": "create_ghl_task",
+      "action_config": {"title": "Follow up — hot lead (score 80+)"},
+      "requires_confirmation": false,
+      "intelligence_context": null
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Confirm a pending execution
+
+<br />
+
+`POST /api/v1/actions/{workspace_id}/executions/{execution_id}/confirm`
+
+Approves a `pending` execution created by a rule with `requires_confirmation: true`. The action executes immediately after confirmation.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="execution_id" type="string" required>The execution UUID to confirm.</ParamField>
+
+```bash
+curl -X POST \
+  "https://api.verahq.ai/api/v1/actions/ws_abc123/executions/exec_xyz123/confirm" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+---
+
+## Seed default rules
+
+<br />
+
+`POST /api/v1/actions/{workspace_id}/seed`
+
+Creates the 8 default action rules for your workspace. This call is idempotent — rules that already exist (matched by name) are skipped.
+
+The default rules cover: CPL spike alerting, hot lead follow-up task creation, payment received logging, churn risk alerting, 3x kill rule campaign pause, funnel close event tracking, creative fatigue swap notification, and network pattern propagation.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+```bash
+curl -X POST https://api.verahq.ai/api/v1/actions/ws_abc123/seed \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+```json
+{
+  "seeded": 7,
+  "workspace_id": "ws_abc123"
+}
+```

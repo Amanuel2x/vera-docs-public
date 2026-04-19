@@ -1,0 +1,96 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "VERA",
+  "theme": "luma",
+  "colors": {
+    "primary": "#7C3AED",
+    "light": "#EDE9FE",
+    "dark": "#4C1D95"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/Amanuel2x/vera-backend"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/workspace",
+              "concepts/clients",
+              "concepts/vera-one"
+            ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/meta-ads",
+              "integrations/ghl",
+              "integrations/google-ads",
+              "integrations/fathom",
+              "integrations/calendly",
+              "integrations/stripe"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/campaigns",
+              "features/lead-scoring",
+              "features/skills",
+              "features/action-engine",
+              "features/reports",
+              "features/landing-pages"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/connect-first-integration",
+              "guides/run-your-first-skill",
+              "guides/set-up-automations"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/overview",
+              "api-reference/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api-reference/clients",
+              "api-reference/campaigns",
+              "api-reference/leads",
+              "api-reference/skills",
+              "api-reference/intelligence",
+              "api-reference/actions",
+              "api-reference/reports"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

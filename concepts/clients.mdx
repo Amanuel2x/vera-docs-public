@@ -1,0 +1,105 @@
+---
+title: "Clients — manage each account in VERA"
+description: "A Client is VERA's record for a single business your agency manages. Attach ad platform accounts to unlock per-client intelligence and lead scoring."
+---
+
+A Client is VERA's record for a single business or account your agency manages. Creating a client is the first step before running campaigns, scoring leads, or generating reports — everything in VERA that relates to a specific business is scoped to a client record.
+
+## Client fields
+
+When you create or update a client, the following fields are available:
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | The client's business name. Required. |
+| `email` | string | Primary contact email. |
+| `phone` | string | Primary contact phone number. |
+| `industry` | string | Industry vertical (e.g. `dental`, `home_services`). Used for benchmark segmentation in Vera One. |
+| `stage` | string | Current lifecycle stage in your agency's pipeline. Defaults to `Lead`. |
+| `mrr` | number | Monthly recurring revenue in USD. Used for churn risk scoring and revenue tracking. |
+| `website` | string | Client website URL. Required for SEO audits. |
+| `monthly_ad_budget` | number | Monthly ad spend target in USD. Used in campaign monitoring alerts. |
+| `meta_account_id` | string | The client's Meta ad account ID (e.g. `act_1234567890`). |
+| `meta_pixel_id` | string | The client's Meta Pixel ID. Used for server-side CAPI event routing. |
+| `google_customer_id` | string | The client's Google Ads leaf account ID. |
+| `ghl_location_id` | string | The client's GoHighLevel sub-account location ID. |
+
+## Creating a client
+
+You can create a client from the **Clients** page in the dashboard by clicking **Add Client**, or via the API:
+
+```http
+POST https://api.verahq.ai/api/v1/clients/{workspace_id}
+X-API-Key: {api_key}
+Content-Type: application/json
+
+{
+  "name": "Acme Dental",
+  "industry": "dental",
+  "website": "https://acmedental.com",
+  "mrr": 2500,
+  "meta_account_id": "act_1234567890",
+  "ghl_location_id": "abc123"
+}
+```
+
+You can also import clients directly from GoHighLevel — VERA will create a client record for each sub-account location you select.
+
+<Info>
+  When you set a `meta_account_id` and leave `meta_pixel_id` blank, VERA automatically fetches the first pixel from that ad account and saves it for you.
+</Info>
+
+## Attaching platform accounts
+
+Attaching platform account IDs to a client tells VERA which accounts belong to that business. This matters for two reasons:
+
+1. **Intelligence routing** — Vera One uses the account IDs to filter campaign metrics, lead events, and conversion signals to the correct client. Without them, signals land at the workspace level with no client context.
+2. **Campaign routing** — when you launch or monitor campaigns through VERA, the platform account IDs tell the system which Meta ad account or GHL sub-account to write to.
+
+Set these IDs when you create the client or update them later from the client profile page in the dashboard.
+
+## What is tracked per client
+
+Once a client is created and platform accounts are attached, the following data is automatically scoped to that client:
+
+<CardGroup cols={2}>
+  <Card title="Leads" icon="users">
+    Meta lead form submissions, GHL contacts, and landing page form fills are all attributed to the client whose ad account generated them.
+  </Card>
+  <Card title="Campaigns" icon="bullhorn">
+    Campaign records, spend, impressions, and performance metrics pulled from Meta and Google Ads.
+  </Card>
+  <Card title="AI skill runs" icon="wand-magic-sparkles">
+    Every skill run — campaign analysis, lead scoring, SEO audit, meeting analysis — is tied to the client it was run for.
+  </Card>
+  <Card title="SEO snapshots" icon="magnifying-glass">
+    Weekly SEO audit scores and issue history, keyed by the client's website URL.
+  </Card>
+  <Card title="Reports" icon="file-chart-line">
+    Weekly and monthly reports are generated per client and include their campaign and pipeline data.
+  </Card>
+  <Card title="Memory" icon="database">
+    Vera One maintains a long-term memory record per client — notes, goals, campaign history, and custom fields that persist across AI skill runs.
+  </Card>
+</CardGroup>
+
+## Client portal
+
+You can generate a shareable, read-only portal link for each client. The portal lets your client view their campaign overview, pipeline stage counts, and recent reports — without logging in to the full VERA dashboard.
+
+To create a portal link, navigate to the client's profile page and click **Generate portal link**. The link contains a unique token and can optionally be set to expire after a number of days. You can also create portal tokens via the API:
+
+```http
+POST https://api.verahq.ai/api/v1/portal/{workspace_id}/tokens
+X-API-Key: {api_key}
+Content-Type: application/json
+
+{
+  "client_id": "your-client-id",
+  "expires_days": 30
+}
+```
+
+<Note>
+  Portal links are read-only and do not require authentication. Share them directly with your client — no VERA account needed on their end.
+</Note>

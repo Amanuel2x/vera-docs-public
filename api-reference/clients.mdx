@@ -1,0 +1,353 @@
+---
+title: "Clients API — create and manage agency accounts"
+description: "List, create, retrieve, update, and delete client records. Attach ad platform account IDs to each client to unlock per-client intelligence."
+---
+
+Clients are the core organizational unit in VERA. Each client record stores contact info, MRR, ad platform account IDs, and lifecycle stage. All routes are scoped to your `workspace_id`.
+
+---
+
+## List clients
+
+<br />
+
+`GET /api/v1/clients/{workspace_id}`
+
+Returns all clients in your workspace, ordered by creation date descending.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+### Response fields
+
+<ResponseField name="clients" type="array">
+  Array of client objects.
+</ResponseField>
+
+<ResponseField name="count" type="integer">
+  Total number of clients returned.
+</ResponseField>
+
+Each client object contains:
+
+<ResponseField name="id" type="string">UUID of the client.</ResponseField>
+<ResponseField name="workspace_id" type="string">Workspace this client belongs to.</ResponseField>
+<ResponseField name="name" type="string">Client display name.</ResponseField>
+<ResponseField name="email" type="string">Primary contact email.</ResponseField>
+<ResponseField name="phone" type="string">Primary contact phone number.</ResponseField>
+<ResponseField name="industry" type="string">Industry vertical (e.g. `real_estate`, `med_spa`).</ResponseField>
+<ResponseField name="stage" type="string">Lifecycle stage. Defaults to `Lead`.</ResponseField>
+<ResponseField name="mrr" type="number">Monthly recurring revenue in dollars.</ResponseField>
+<ResponseField name="website" type="string">Client website URL.</ResponseField>
+<ResponseField name="meta_account_id" type="string">Meta ad account ID (e.g. `act_123456789`).</ResponseField>
+<ResponseField name="meta_pixel_id" type="string">Meta pixel ID. Auto-populated when a `meta_account_id` is set and VERA finds a pixel on the account.</ResponseField>
+<ResponseField name="google_customer_id" type="string">Google Ads customer ID.</ResponseField>
+<ResponseField name="monthly_ad_budget" type="number">Total monthly ad budget across all platforms, in dollars.</ResponseField>
+<ResponseField name="ghl_location_id" type="string">GoHighLevel location ID for CRM sync.</ResponseField>
+<ResponseField name="created_at" type="string">ISO 8601 timestamp of creation.</ResponseField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl https://api.verahq.ai/api/v1/clients/ws_abc123 \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "clients": [
+        {
+          "id": "clt_9f2e1a",
+          "workspace_id": "ws_abc123",
+          "name": "Apex Dental Group",
+          "email": "owner@apexdental.com",
+          "phone": "+15551234567",
+          "industry": "dental",
+          "stage": "Active",
+          "mrr": 3500.0,
+          "website": "https://apexdental.com",
+          "meta_account_id": "act_987654321",
+          "meta_pixel_id": "1122334455",
+          "google_customer_id": "123-456-7890",
+          "monthly_ad_budget": 5000.0,
+          "ghl_location_id": "loc_xyz789",
+          "created_at": "2025-11-01T09:00:00+00:00"
+        }
+      ],
+      "count": 1
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Create a client
+
+<br />
+
+`POST /api/v1/clients/{workspace_id}`
+
+Creates a new client. Tier limits apply: Solo workspaces are limited to 1 client; Agency workspaces are limited to their purchased seat count.
+
+When you supply a `meta_account_id` without a `meta_pixel_id`, VERA automatically fetches the first pixel from that ad account in the background and saves it for you.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+### Body parameters
+
+<ParamField body="name" type="string" required>
+  Client display name.
+</ParamField>
+
+<ParamField body="email" type="string">
+  Primary contact email address.
+</ParamField>
+
+<ParamField body="phone" type="string">
+  Primary contact phone number.
+</ParamField>
+
+<ParamField body="industry" type="string">
+  Industry vertical.
+</ParamField>
+
+<ParamField body="stage" type="string">
+  Lifecycle stage. Defaults to `Lead`.
+</ParamField>
+
+<ParamField body="mrr" type="number">
+  Monthly recurring revenue in dollars.
+</ParamField>
+
+<ParamField body="website" type="string">
+  Client website URL.
+</ParamField>
+
+<ParamField body="meta_account_id" type="string">
+  Meta ad account ID. Triggers automatic pixel lookup when set.
+</ParamField>
+
+<ParamField body="meta_pixel_id" type="string">
+  Meta pixel ID. Skips the auto-lookup when provided.
+</ParamField>
+
+<ParamField body="google_customer_id" type="string">
+  Google Ads customer ID.
+</ParamField>
+
+<ParamField body="monthly_ad_budget" type="number">
+  Total monthly ad budget in dollars.
+</ParamField>
+
+<ParamField body="ghl_location_id" type="string">
+  GoHighLevel location ID.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X POST https://api.verahq.ai/api/v1/clients/ws_abc123 \
+      -H "X-API-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "name": "Apex Dental Group",
+        "email": "owner@apexdental.com",
+        "industry": "dental",
+        "mrr": 3500,
+        "website": "https://apexdental.com",
+        "meta_account_id": "act_987654321",
+        "monthly_ad_budget": 5000
+      }'
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "clt_9f2e1a",
+      "workspace_id": "ws_abc123",
+      "name": "Apex Dental Group",
+      "email": "owner@apexdental.com",
+      "phone": null,
+      "industry": "dental",
+      "stage": "Lead",
+      "mrr": 3500.0,
+      "website": "https://apexdental.com",
+      "meta_account_id": "act_987654321",
+      "meta_pixel_id": null,
+      "google_customer_id": null,
+      "monthly_ad_budget": 5000.0,
+      "ghl_location_id": null,
+      "created_at": "2026-04-19T10:30:00+00:00"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Get a client
+
+<br />
+
+`GET /api/v1/clients/{workspace_id}/{client_id}`
+
+Returns a single client by ID.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+<ParamField path="client_id" type="string" required>
+  The client's UUID.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl https://api.verahq.ai/api/v1/clients/ws_abc123/clt_9f2e1a \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "clt_9f2e1a",
+      "workspace_id": "ws_abc123",
+      "name": "Apex Dental Group",
+      "email": "owner@apexdental.com",
+      "phone": null,
+      "industry": "dental",
+      "stage": "Active",
+      "mrr": 3500.0,
+      "website": "https://apexdental.com",
+      "meta_account_id": "act_987654321",
+      "meta_pixel_id": "1122334455",
+      "google_customer_id": null,
+      "monthly_ad_budget": 5000.0,
+      "ghl_location_id": "loc_xyz789",
+      "created_at": "2025-11-01T09:00:00+00:00"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Update a client
+
+<br />
+
+`PATCH /api/v1/clients/{workspace_id}/{client_id}`
+
+Updates one or more fields on an existing client. Only the fields you include in the request body are modified.
+
+Changing the `stage` field is logged as an intelligence event for tracking client lifecycle progress.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+<ParamField path="client_id" type="string" required>
+  The client's UUID.
+</ParamField>
+
+### Body parameters
+
+All fields are optional. Include only the fields you want to update.
+
+<ParamField body="name" type="string">Client display name.</ParamField>
+<ParamField body="email" type="string">Primary contact email.</ParamField>
+<ParamField body="phone" type="string">Primary contact phone.</ParamField>
+<ParamField body="industry" type="string">Industry vertical.</ParamField>
+<ParamField body="stage" type="string">Lifecycle stage.</ParamField>
+<ParamField body="mrr" type="number">Monthly recurring revenue in dollars.</ParamField>
+<ParamField body="website" type="string">Client website URL.</ParamField>
+<ParamField body="meta_account_id" type="string">Meta ad account ID.</ParamField>
+<ParamField body="meta_pixel_id" type="string">Meta pixel ID.</ParamField>
+<ParamField body="google_customer_id" type="string">Google Ads customer ID.</ParamField>
+<ParamField body="monthly_ad_budget" type="number">Total monthly ad budget in dollars.</ParamField>
+<ParamField body="ghl_location_id" type="string">GoHighLevel location ID.</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X PATCH https://api.verahq.ai/api/v1/clients/ws_abc123/clt_9f2e1a \
+      -H "X-API-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "stage": "Active",
+        "mrr": 4500
+      }'
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "id": "clt_9f2e1a",
+      "workspace_id": "ws_abc123",
+      "name": "Apex Dental Group",
+      "email": "owner@apexdental.com",
+      "phone": null,
+      "industry": "dental",
+      "stage": "Active",
+      "mrr": 4500.0,
+      "website": "https://apexdental.com",
+      "meta_account_id": "act_987654321",
+      "meta_pixel_id": "1122334455",
+      "google_customer_id": null,
+      "monthly_ad_budget": 5000.0,
+      "ghl_location_id": "loc_xyz789",
+      "created_at": "2025-11-01T09:00:00+00:00"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Delete a client
+
+<br />
+
+`DELETE /api/v1/clients/{workspace_id}/{client_id}`
+
+Permanently deletes a client and all associated data. This action cannot be undone.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+<ParamField path="client_id" type="string" required>
+  The client's UUID.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X DELETE https://api.verahq.ai/api/v1/clients/ws_abc123/clt_9f2e1a \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "deleted": "clt_9f2e1a"
+    }
+    ```
+  </Tab>
+</Tabs>

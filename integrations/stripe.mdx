@@ -1,0 +1,53 @@
+---
+title: "Connect Stripe Payments to VERA"
+description: "Add your Stripe Secret Key to track payments, view MRR per client, and fire Purchase conversion events to ad platforms the moment a payment is confirmed."
+---
+
+Connecting Stripe gives VERA visibility into your payment revenue and closes the attribution loop all the way to cash collected. Every confirmed payment fires a `Purchase` conversion event to all connected ad platforms with the exact payment value — so your ROAS data reflects real revenue, not just leads.
+
+## What connecting Stripe unlocks
+
+- **Payment tracking** — confirmed payments from Stripe are recorded in VERA and linked to the workspace revenue layer
+- **MRR reporting** — monthly recurring revenue per client is visible on the **Revenue** page
+- **Purchase conversion forwarding** — every `checkout.session.completed` event fires a `Purchase` signal to all connected ad platforms (Meta CAPI, TikTok Events API, Google Ads Conversions) with the exact payment value
+- **Vera One intelligence** — payment events feed the intelligence layer, triggering alerts and Action Engine rules on `payment_received` signals
+
+## How to connect
+
+Unlike the other integrations, Stripe connects via a Secret Key rather than OAuth.
+
+<Steps>
+  <Step title="Get your Stripe Secret Key">
+    Log in to your [Stripe Dashboard](https://dashboard.stripe.com/apikeys). Copy your **Secret key** — it starts with `sk_live_` (production) or `sk_test_` (test mode).
+  </Step>
+  <Step title="Go to Setup">
+    In the VERA dashboard, navigate to **Settings → Setup**.
+  </Step>
+  <Step title="Enter your Secret Key on the Stripe card">
+    Paste your Stripe Secret Key into the field and click Connect. VERA validates the key against the Stripe API before saving.
+  </Step>
+</Steps>
+
+<Warning>
+  Keep your Stripe Secret Key private. Do not share it or commit it to version control. VERA stores it encrypted and uses it only to receive payment webhooks and verify events.
+
+  VERA accepts keys starting with `sk_live_`, `sk_test_`, `rk_live_`, or `rk_test_`.
+</Warning>
+
+## How payment events reach your ad platforms
+
+When Stripe fires a `checkout.session.completed` event to VERA:
+
+1. VERA records the payment and links it to the workspace.
+2. VERA dispatches a `Purchase` conversion event to all connected ad platforms simultaneously via the funnel event bus.
+3. The exact payment amount from the Stripe event is included as the conversion value — so ROAS calculations in Meta, TikTok, and Google Ads reflect the real revenue from that checkout.
+
+<Tip>
+  Connecting Stripe alongside Meta Ads means Meta receives server-side `Purchase` events with accurate revenue values. This directly improves ROAS reporting and helps Meta's algorithm optimize for high-value customers.
+</Tip>
+
+## MRR dashboard
+
+Once Stripe is connected, the **Revenue** page shows monthly recurring revenue per client. VERA tracks MRR from payment records and updates the dashboard as new payments arrive.
+
+To view MRR for a specific client, navigate to **Revenue** and select the client from the list.

@@ -1,0 +1,323 @@
+---
+title: "Campaigns API — manage Meta and Google Ads"
+description: "List, pause, resume, and update campaign budgets across Meta and Google Ads. Launch AI-assisted campaigns through the VERA orchestrator."
+---
+
+The Campaigns API is a platform-agnostic layer over Meta Ads and Google Ads. All write operations (pause, resume, budget change) are logged to the intelligence feed. Campaign data is normalized into a consistent shape regardless of platform.
+
+---
+
+## Normalized campaign object
+
+Both Meta and Google campaigns are returned in a common shape:
+
+<ResponseField name="id" type="string">Platform campaign ID.</ResponseField>
+<ResponseField name="name" type="string">Campaign name.</ResponseField>
+<ResponseField name="status" type="string">Campaign status: `active`, `paused`, or `archived`.</ResponseField>
+<ResponseField name="platform" type="string">`meta` or `google`.</ResponseField>
+<ResponseField name="spend" type="number">Total spend over the requested period, in dollars.</ResponseField>
+<ResponseField name="impressions" type="integer">Total impressions.</ResponseField>
+<ResponseField name="clicks" type="integer">Total clicks.</ResponseField>
+<ResponseField name="ctr" type="number">Click-through rate as a percentage.</ResponseField>
+<ResponseField name="cpc" type="number">Average cost-per-click in dollars.</ResponseField>
+<ResponseField name="conversions" type="number">Total conversions.</ResponseField>
+<ResponseField name="cpl" type="number">Cost per lead in dollars. `null` when conversions is zero.</ResponseField>
+<ResponseField name="daily_budget" type="number">Daily budget in dollars. `null` if unavailable from the platform.</ResponseField>
+<ResponseField name="roas" type="number">Return on ad spend. `null` unless conversion value tracking is configured.</ResponseField>
+<ResponseField name="client_id" type="string">VERA client ID the campaign is linked to. `null` if the ad account is not linked to any client.</ResponseField>
+<ResponseField name="client_name" type="string">Client display name.</ResponseField>
+<ResponseField name="account_id" type="string">Platform ad account ID.</ResponseField>
+
+---
+
+## List all campaigns
+
+<br />
+
+`GET /api/v1/campaigns/{workspace_id}`
+
+Returns all campaigns across every connected ad account for this workspace — Meta and Google combined. Ad accounts not yet linked to a VERA client are included with `client_id: null`.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="date_preset" type="string">
+  Date range for metrics. One of `last_7d`, `last_14d`, `last_30d`, `last_90d`. Defaults to `last_30d`.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl "https://api.verahq.ai/api/v1/campaigns/ws_abc123?date_preset=last_7d" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "campaigns": [
+        {
+          "id": "120218365432",
+          "name": "Apex Dental — Spring Promo",
+          "status": "active",
+          "platform": "meta",
+          "spend": 1240.50,
+          "impressions": 98000,
+          "clicks": 1820,
+          "ctr": 1.86,
+          "cpc": 0.68,
+          "conversions": 34.0,
+          "cpl": 36.49,
+          "daily_budget": 200.0,
+          "roas": null,
+          "client_id": "clt_9f2e1a",
+          "client_name": "Apex Dental Group",
+          "account_id": "act_987654321"
+        }
+      ],
+      "count": 1,
+      "clients_checked": 3,
+      "errors": []
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## List campaigns for a client
+
+<br />
+
+`GET /api/v1/campaigns/{workspace_id}/{client_id}`
+
+Returns campaigns from all connected platforms for a single client.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>
+  Your workspace ID.
+</ParamField>
+
+<ParamField path="client_id" type="string" required>
+  The client's UUID.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="date_preset" type="string">
+  Date range for metrics. Defaults to `last_30d`.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl "https://api.verahq.ai/api/v1/campaigns/ws_abc123/clt_9f2e1a" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "campaigns": [...],
+      "count": 4,
+      "client_name": "Apex Dental Group",
+      "errors": []
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Pause a campaign
+
+<br />
+
+`POST /api/v1/campaigns/{workspace_id}/{client_id}/{platform}/{campaign_id}/pause`
+
+Pauses the specified campaign on Meta or Google. The action is written to the intelligence feed.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="client_id" type="string" required>The client's UUID.</ParamField>
+<ParamField path="platform" type="string" required>`meta` or `google`.</ParamField>
+<ParamField path="campaign_id" type="string" required>Platform campaign ID.</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X POST \
+      "https://api.verahq.ai/api/v1/campaigns/ws_abc123/clt_9f2e1a/meta/120218365432/pause" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "success": true,
+      "action": "pause",
+      "platform": "meta",
+      "campaign_id": "120218365432"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Resume a campaign
+
+<br />
+
+`POST /api/v1/campaigns/{workspace_id}/{client_id}/{platform}/{campaign_id}/resume`
+
+Reactivates a paused campaign.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="client_id" type="string" required>The client's UUID.</ParamField>
+<ParamField path="platform" type="string" required>`meta` or `google`.</ParamField>
+<ParamField path="campaign_id" type="string" required>Platform campaign ID.</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X POST \
+      "https://api.verahq.ai/api/v1/campaigns/ws_abc123/clt_9f2e1a/meta/120218365432/resume" \
+      -H "X-API-Key: YOUR_API_KEY"
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "success": true,
+      "action": "resume",
+      "platform": "meta",
+      "campaign_id": "120218365432"
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Update campaign budget
+
+<br />
+
+`POST /api/v1/campaigns/{workspace_id}/{client_id}/{platform}/{campaign_id}/budget`
+
+Updates the daily budget for a campaign. The value is in dollars.
+
+### Path parameters
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="client_id" type="string" required>The client's UUID.</ParamField>
+<ParamField path="platform" type="string" required>`meta` or `google`.</ParamField>
+<ParamField path="campaign_id" type="string" required>Platform campaign ID.</ParamField>
+
+### Body parameters
+
+<ParamField body="amount" type="number" required>
+  New daily budget in dollars. Must be greater than `0`.
+</ParamField>
+
+<Tabs>
+  <Tab title="Request">
+    ```bash
+    curl -X POST \
+      "https://api.verahq.ai/api/v1/campaigns/ws_abc123/clt_9f2e1a/meta/120218365432/budget" \
+      -H "X-API-Key: YOUR_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"amount": 250}'
+    ```
+  </Tab>
+  <Tab title="Response">
+    ```json
+    {
+      "success": true,
+      "action": "budget_change",
+      "platform": "meta",
+      "amount": 250.0
+    }
+    ```
+  </Tab>
+</Tabs>
+
+---
+
+## Campaign Orchestrator
+
+The Campaign Orchestrator provides a structured, three-step flow for launching campaigns with VERA's assistance. You create a draft, ask VERA to fill in missing fields using network benchmarks, then launch.
+
+### Create a draft
+
+`POST /api/v1/campaigns/orchestrate/{workspace_id}`
+
+Creates a blank campaign draft. You can supply as many or as few fields as you like — VERA fills the rest during the recommend step.
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+
+#### Body parameters
+
+<ParamField body="platform" type="string">Ad platform. Defaults to `meta`.</ParamField>
+<ParamField body="client_id" type="string">VERA client ID to associate this campaign with.</ParamField>
+<ParamField body="ad_account_id" type="string">Platform ad account ID.</ParamField>
+<ParamField body="name" type="string">Campaign name.</ParamField>
+<ParamField body="objective" type="string">Campaign objective (e.g. `lead_generation`, `conversions`, `traffic`).</ParamField>
+<ParamField body="daily_budget" type="number">Daily budget in dollars.</ParamField>
+<ParamField body="cpl_target" type="number">Target cost-per-lead in dollars.</ParamField>
+
+```bash
+curl -X POST https://api.verahq.ai/api/v1/campaigns/orchestrate/ws_abc123 \
+  -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "platform": "meta",
+    "client_id": "clt_9f2e1a",
+    "objective": "lead_generation",
+    "daily_budget": 200
+  }'
+```
+
+### Get VERA recommendations
+
+`POST /api/v1/campaigns/orchestrate/{workspace_id}/{draft_id}/recommend`
+
+VERA fills every blank field in the draft using Vera One network benchmarks and Claude AI. Returns the updated draft along with `vera_reasoning`, `warnings`, and a `cold_start` flag.
+
+When `cold_start` is `true`, your workspace has fewer than 5 historical campaigns — recommendations are based on network data only, not your own history.
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="draft_id" type="string" required>The draft UUID returned from the create step.</ParamField>
+
+```bash
+curl -X POST \
+  "https://api.verahq.ai/api/v1/campaigns/orchestrate/ws_abc123/draft_xyz/recommend" \
+  -H "X-API-Key: YOUR_API_KEY"
+```
+
+### Launch the campaign
+
+`POST /api/v1/campaigns/orchestrate/{workspace_id}/{draft_id}/launch`
+
+Executes the confirmed draft on the target platform. The draft must have `status: confirmed` before you call this endpoint — update it with a `PATCH` call first.
+
+For Meta: creates the campaign, ad set, creative, and ad (all created `PAUSED`). Returns platform IDs and a `campaign_record_id` for intelligence tracking.
+
+<ParamField path="workspace_id" type="string" required>Your workspace ID.</ParamField>
+<ParamField path="draft_id" type="string" required>The confirmed draft UUID.</ParamField>
+
+```bash
+curl -X POST \
+  "https://api.verahq.ai/api/v1/campaigns/orchestrate/ws_abc123/draft_xyz/launch" \
+  -H "X-API-Key: YOUR_API_KEY"
+```

@@ -1,0 +1,78 @@
+---
+title: "Connect GoHighLevel CRM to VERA"
+description: "Sync contacts, pipeline stages, and conversation history from GoHighLevel, and trigger CRM actions automatically from Vera One signals."
+---
+
+GoHighLevel is the primary CRM layer in VERA. Connecting it lets Vera One read your contacts and pipeline, attribute Meta leads to GHL contacts, and take automated actions — tagging contacts, creating tasks, and enrolling sequences — based on real-time intelligence signals.
+
+## What connecting GoHighLevel unlocks
+
+- **Contact sync** — pull all contacts from your GHL sub-account into VERA for lead scoring and attribution
+- **Pipeline stage management** — view opportunities grouped by stage; stage changes from GHL are received by VERA automatically via webhook
+- **Conversation history** — full message history per contact, available in the intelligence layer
+- **Lead attribution** — Meta lead form submissions are matched to GHL contacts by email and phone
+- **CRM actions via Action Engine** — tag contacts, create tasks, and enroll sequences triggered by Vera One signals (e.g. a high lead score, a stage change, a payment event)
+
+## How to connect
+
+VERA uses GoHighLevel's OAuth v2 flow. The connection involves two steps: authorizing at the agency (company) level to discover your sub-accounts, then authorizing at the sub-account (location) level to operate inside it.
+
+<Steps>
+  <Step title="Go to Setup">
+    In the VERA dashboard, navigate to **Settings → Setup**.
+  </Step>
+  <Step title="Click Connect on the GoHighLevel card">
+    VERA redirects you to the GHL OAuth consent screen.
+  </Step>
+  <Step title="Authorize and pick your sub-account">
+    Log in to GoHighLevel and select the sub-account (location) you want VERA to operate in. This is typically the account you manage campaigns and contacts from.
+  </Step>
+  <Step title="Return to VERA">
+    After authorizing, GHL redirects you back to VERA. A full backfill of your contacts, pipeline, and conversations begins automatically in the background.
+  </Step>
+</Steps>
+
+<Note>
+  The backfill runs after connect and does not block the redirect. Depending on your contact volume, it may take a few minutes to complete. Check the **Intelligence** page for backfill progress events.
+</Note>
+
+## What VERA backfills on connect
+
+When you complete the GHL OAuth flow, VERA queues a full four-step backfill sequence:
+
+1. **Meta Ads data** — existing campaign data from your connected Meta account
+2. **Meta → GHL lead matching** — cross-references Meta leads against GHL contacts
+3. **GHL contacts and pipeline** — full contact list and all open opportunities
+4. **GHL conversations** — full message history per contact, paginated
+
+## Lead attribution
+
+When Meta Ads and GoHighLevel are both connected, VERA automatically matches each incoming Meta lead form submission to a GHL contact:
+
+1. VERA searches GHL contacts by the lead's **email address**.
+2. If no email match is found, VERA searches by **phone number**.
+3. Matched leads are linked to their GHL contact ID. Unmatched leads remain in VERA and are re-evaluated on the next sync.
+
+The funnel view in VERA uses this attribution to show the full prospect journey: **Prospects (Meta leads) → Contacted (matched GHL) → Meeting Set (Calendly booked) → Proposal**.
+
+## CRM actions via Action Engine
+
+Once GHL is connected, the Action Engine can trigger the following CRM actions in response to Vera One signals:
+
+| Action | What it does |
+|---|---|
+| `tag_contact` | Adds one or more tags to a GHL contact. VERA merges new tags with existing ones — existing tags are never removed. |
+| `create_ghl_task` | Creates a follow-up task in GHL for the contact associated with the signal. |
+| `enroll_sequence` | Enrolls a contact in a GHL automation sequence. |
+
+## Webhook events from GHL
+
+After connecting, GHL sends pipeline stage change events to VERA automatically. These stage changes are used to:
+
+- Update the funnel view in real time
+- Dispatch conversion events to connected ad platforms (Meta CAPI, TikTok, Google Ads) when a contact moves to a booked, showed, or closed stage
+- Trigger Action Engine rules that respond to `ghl_stage_change` signals
+
+<Warning>
+  If you reconnect GHL or change your sub-account, existing webhook registrations may need to be re-registered. Contact support if stage change events stop appearing in VERA after a reconnect.
+</Warning>

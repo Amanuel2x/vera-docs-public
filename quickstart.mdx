@@ -1,0 +1,61 @@
+---
+title: "Get started with VERA"
+description: "Learn how to create your workspace, connect your first integration, add a client, and run your first AI skill — all in under 15 minutes."
+---
+
+This guide walks you through everything you need to go from a blank VERA workspace to running your first AI skill against real client data. Follow the steps in order — each one builds on the last.
+
+<Note>
+  API access requires an API key. Once your workspace is created, you can find your key in **Settings → Workspace settings**. See [Authentication](/authentication) for details on how to pass it.
+</Note>
+
+<Steps>
+  <Step title="Sign up and create your workspace">
+    Go to [app.verahq.ai](https://app.verahq.ai) and sign up. You can sign in with your email address.
+
+    After your first login, VERA creates a workspace automatically and names it after your email address. You can rename it at any time from **Settings → Workspace settings**.
+
+    Your workspace is the top-level container for all your clients, integrations, settings, and AI skill history.
+  </Step>
+
+  <Step title="Connect at least one integration">
+    Go to **Setup** and connect an integration. We recommend starting with **Meta Ads** or **GoHighLevel** — they provide the richest data for lead scoring and campaign monitoring.
+
+    VERA uses OAuth for all integrations. Click the **Connect** button next to the platform you want to add and complete the authorization flow. Once connected, VERA begins backfilling historical data automatically — campaigns, contacts, conversations, and meetings are synced in the background so you have accurate benchmarks from day one.
+
+    Supported integrations:
+    - **Meta Ads** — campaigns, ad sets, insights, CAPI
+    - **GoHighLevel** — contacts, pipelines, conversations
+    - **Google Ads** — campaigns and performance data
+    - **Fathom** — meeting recordings and summaries
+    - **Calendly** — booked events
+    - **Stripe** — MRR and subscription history
+  </Step>
+
+  <Step title="Add your first client">
+    Go to **Clients** and click **Add client**. Each client record stores:
+
+    - **Name** — the client or account name displayed across the dashboard
+    - **MRR** — monthly recurring revenue, used by Vera One for churn risk and revenue attribution
+    - **Platform account IDs** — the ad account IDs and CRM location IDs that belong to this client, so VERA knows which data to pull when running skills or generating reports
+
+    Fill in the name and MRR to start. You can add platform account IDs once you have confirmed which accounts belong to this client.
+  </Step>
+
+  <Step title="Run your first AI skill">
+    Go to **Skills** and select a client. Choose a skill to run — good starting points are:
+
+    - **`meta-ads-analysis`** — reviews campaign performance, identifies underperforming ad sets, and returns optimization recommendations
+    - **`lead-scorer`** — scores all contacts in your connected CRM across fit, engagement, timing, and intent
+
+    Click **Run skill**. VERA fetches the latest data for that client, builds a prompt using your connected platform data, and passes it to the AI model. Skills typically complete in 10–30 seconds depending on data volume.
+
+    You can also trigger skills from the client detail page by clicking **Run AI skill** next to the client name.
+  </Step>
+
+  <Step title="Review results in the Intelligence feed">
+    Go to **Intelligence** to see the output. The Intelligence feed is where Vera One surfaces everything it has found: skill results, lead score changes, campaign alerts, attribution events, and churn risk signals.
+
+    Each entry shows the client, the signal type, a timestamp, and the AI-generated output or recommendation. From the feed you can acknowledge alerts, drill into skill results, or trigger follow-up actions directly.
+  </Step>
+</Steps>
